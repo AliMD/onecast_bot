@@ -1,0 +1,14 @@
+{
+  "name": "OneCastBot",
+  "version": "1.0.0",
+  "description": "Code for @onecast_bot",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "Ali Mihandoost <i@ali.md>",
+  "license": "MIT",
+  "dependencies": {
+    "babel": "^5.6.14"
+  }
+}
