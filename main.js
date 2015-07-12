@@ -9,7 +9,8 @@ var
 
 config = {
   token: process.env.ONECAST_BOT_TOKEN,
-  saveinterval: 3000 // ms
+  saveInterval: 3000, // ms
+  updateInterval: 1000 //ms
 },
 
 data = {
@@ -18,13 +19,22 @@ data = {
 },
 
 bot = new telegramBot({
-  token: config.token
+  token: config.token,
+  updates: {
+    enabled: true,
+    get_interval: config.updateInterval
+  }
 }),
 
 init = () => {
   console.log('Init');
+  botEvents();
   loadData();
-  getBotInfo()
+  getBotInfo();
+},
+
+botEvents = () => {
+  bot.on('message', onMessage);
 },
 
 loadData = () => {
@@ -46,6 +56,17 @@ getBotInfo = () => {
   });
 },
 
+REGEXP = {
+  SUBSCRIBE: /?/
+},
+
+onMessage = (msg) => {
+  console.log(`${msg.from.username}: ${msg.text}`);
+  
+  //TODo SUBSCRIBE
+
+},
+
 subscribe = (user) => {
   console.log('subscribe');
   console.log(user);
@@ -65,7 +86,7 @@ saveContents = (force) => {
     write('users', users);
   } else {
     clearInterval(lastTimeout);
-    lastTimeout = setTimeout(saveContents, config.saveinterval, true);
+    lastTimeout = setTimeout(saveContents, config.saveInterval, true);
   }
 }
 
