@@ -1,8 +1,14 @@
+/**
+ * OneCast Bot
+ */
+
+import telegramBot from 'telegram-bot-api';
 import {read, write} from './files';
 
 var
 
 config = {
+  token: process.env.ONECAST_BOT_TOKEN,
   saveinterval: 3000 // ms
 },
 
@@ -11,11 +17,14 @@ data = {
   onecasts: []
 },
 
+bot = new telegramBot({
+  token: config.token
+}),
+
 init = () => {
   console.log('Init');
   loadData();
-  registerCommands();
-  botStart();
+  getBotInfo()
 },
 
 loadData = () => {
@@ -24,12 +33,17 @@ loadData = () => {
   data.onecasts = read('onecasts');
 },
 
-botStart = () => {
-  console.log('botStart');
-},
-
-registerCommands = () => {
-  console.log('registerCommands');
+getBotInfo = () => {
+  console.log('getBotInfo');
+  console.log(`token: ${config.token}`);
+  bot.getMe((err, data) => {
+    if(data.username) {
+      console.log(data);
+      config.bot = data;
+    } else {
+      console.log(`error: ${err}`);
+    }
+  });
 },
 
 subscribe = (user) => {
