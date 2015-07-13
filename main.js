@@ -28,7 +28,7 @@ bot = new telegramBot({
 }),
 
 init = () => {
-  console.log(l10n('Init'));
+  console.log('Init');
   botEvents();
   loadData();
   getBotInfo();
@@ -116,7 +116,7 @@ subscribe = (user) => {
   data.users[user.id] = usr;
   saveContents();
 
-  // sendMessage(user.id, l10n('subscribed'));
+  sendMessage(user.id, l10n('subscribed'));
 },
 
 unsubscribe = (user) => {
@@ -128,11 +128,26 @@ lastTimeout = 0,
 saveContents = (force) => {
   if(force) {
     console.log('saveContents');
-    write('users', users);
+    write('users', data.users);
   } else {
     clearInterval(lastTimeout);
     lastTimeout = setTimeout(saveContents, config.saveInterval, true);
   }
+},
+
+sendMessage = (id, text) => {
+  let username = data.users[id] ? 
+                  data.users[id].username ? `@${data.users[id].username}` : `${data.users[id].title}`
+                  : `#${id}`;
+  console.log(`sendMessage (${username}): ${text}`);
+  bot.sendMessage({
+    chat_id: id,
+    text: text
+  }, (err, data) => {
+    console.log('Error!');
+    console.log(err);
+    console.log(data);
+  });
 }
 
 ;
