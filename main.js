@@ -3,6 +3,7 @@
  */
 
 import telegramBot from 'telegram-bot-api';
+import {l10n} from './i18n';
 import {read, write} from './files';
 
 var
@@ -14,7 +15,6 @@ config = {
 },
 
 data = {
-  l18n: null,
   users: null,
   posts: null
 },
@@ -28,7 +28,7 @@ bot = new telegramBot({
 }),
 
 init = () => {
-  console.log('Init');
+  console.log(l10n('Init'));
   botEvents();
   loadData();
   getBotInfo();
@@ -40,7 +40,6 @@ botEvents = () => {
 
 loadData = () => {
   console.log('loadData');
-  data.l18n = read('l18n', {});
   data.users = read('users', {});
   data.posts = read('posts', []);
 },
@@ -117,7 +116,7 @@ subscribe = (user) => {
   data.users[user.id] = usr;
   saveContents();
 
-  sendMessage(user.id, data.l18n.subscribed)
+  // sendMessage(user.id, l10n('subscribed'));
 },
 
 unsubscribe = (user) => {
