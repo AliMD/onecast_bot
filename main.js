@@ -40,8 +40,12 @@ botEvents = () => {
 
 loadData = () => {
   console.log('loadData');
-  data.users = read('users', {});
+
   data.posts = read('posts', []);
+  console.log(`${data.posts} posts loaded`);
+
+  data.users = read('users', {});
+  console.log(`${data.users} users loaded`);
 },
 
 getBotInfo = () => {
@@ -101,6 +105,9 @@ subscribe = (user) => {
   console.log('subscribe');
   console.log(user);
 
+  // if(!checkSubscribed(user))
+  // {
+
   let usr = {}
   if (user.username) // type is user
   {
@@ -135,7 +142,7 @@ saveContents = (force) => {
   }
 },
 
-sendMessage = (id, text) => {
+sendMessage = (id, text, fb = ()=>{}) => {
   let username = data.users[id] ? 
                   data.users[id].username ? `@${data.users[id].username}` : `${data.users[id].title}`
                   : `#${id}`;
@@ -144,10 +151,21 @@ sendMessage = (id, text) => {
     chat_id: id,
     text: text
   }, (err, data) => {
+    if(!err) return fb();
+    // else
     console.log('Error!');
     console.log(err);
     console.log(data);
+    //TODO: add to awaiting list
   });
+},
+
+checkSubscribed = (id) => {
+  return !!data.users[id];
+},
+
+sentUnfinishedMessage = () => {
+  // TODO: sent unfinished message from a waiting list
 }
 
 ;
