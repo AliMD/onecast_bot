@@ -49,11 +49,12 @@ getBotInfo = () => {
   console.log('getBotInfo');
   console.log(`token: ${config.token}`);
   bot.getMe((err, data) => {
-    if(data.username) {
+    if(data && data.username) {
       console.log(data);
       config.bot = data;
     } else {
-      console.log(`error: ${err}`);
+      console.log('error!');
+      console.log(err);
     }
   });
 },
