@@ -14,8 +14,9 @@ config = {
 },
 
 data = {
-  users: [],
-  onecasts: []
+  l18n: null,
+  users: null,
+  posts: null
 },
 
 bot = new telegramBot({
@@ -39,8 +40,9 @@ botEvents = () => {
 
 loadData = () => {
   console.log('loadData');
-  data.users = read('users');
-  data.onecasts = read('onecasts');
+  data.l18n = read('l18n', {});
+  data.users = read('users', {});
+  data.posts = read('posts', []);
 },
 
 getBotInfo = () => {
@@ -56,23 +58,65 @@ getBotInfo = () => {
   });
 },
 
-REGEXP = {
-  SUBSCRIBE: /start|subscribe|عضویت/i,
-  UNSUBSCRIBE: /stop|unsubscribe|خروخ|/i
+REGEXPS = {
+  subscribe: /start|subscribe|عضویت/i,
+  unsubscribe: /stop|unsubscribe|خروخ|/i
 },
 
 onMessage = (msg) => {
   console.log(`${msg.from.username}: ${msg.text}`);
+  /* msg sample
+  {
+    message_id: 1,
+    from: {
+      id: 58389411,
+      first_name: 'Ali',
+      last_name: 'Mihandoost',
+      username: 'Al1MD'
+    },
+    chat: {
+      id: 58389411,
+      first_name: 'Ali',
+      last_name: 'Mihandoost',
+      username: 'Al1MD'
+    },
+    date: 1436704651,
+    text: 'F'
+  }
+  */
 
-  //TODo SUBSCRIBE
+  //Subscribe
+  if(REGEXPS.subscribe.test(msg.text))
+  {
+    subscribe(msg.chat);
+    if(msg.chat.id !== msg.from.id)
+    {
+      subscribe(msg.from);
+    }
+  }
 
 },
 
 subscribe = (user) => {
   console.log('subscribe');
   console.log(user);
-  users.push(user);
+
+  let usr = {}
+  if (user.username) // type is user
+  {
+    usr.first_name = user.first_name;
+    usr.last_name = user.last_name;
+    usr.username = user.username;
+  }
+  else
+  {
+    usr.title = user.title
+  }
+
+  data.users[user.id] = usr;
   saveContents();
+
+  sendMessage(user.id, data.l18n.subscribed)
 },
 
 unsubscribe = (user) => {
