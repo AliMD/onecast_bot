@@ -57,12 +57,13 @@ getBotInfo = () => {
 },
 
 REGEXP = {
-  SUBSCRIBE: /?/
+  SUBSCRIBE: /start|subscribe|عضویت/i,
+  UNSUBSCRIBE: /stop|unsubscribe|خروخ|/i
 },
 
 onMessage = (msg) => {
   console.log(`${msg.from.username}: ${msg.text}`);
-  
+
   //TODo SUBSCRIBE
 
 },
