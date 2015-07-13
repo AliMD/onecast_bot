@@ -52,10 +52,13 @@ getBotInfo = () => {
   console.log('getBotInfo');
   console.log(`token: ${config.token}`);
   bot.getMe((err, data) => {
-    if(data && data.username) {
+    if (data && data.username)
+    {
       console.log(data);
       config.bot = data;
-    } else {
+    }
+    else
+    {
       console.log('error!');
       console.log(err);
     }
@@ -69,6 +72,8 @@ REGEXPS = {
 
 onMessage = (msg) => {
   console.log(`${msg.from.username}: ${msg.text}`);
+  if(!msg.text) console.log(msg);
+
   /* msg sample
   {
     message_id: 1,
@@ -90,40 +95,53 @@ onMessage = (msg) => {
   */
 
   //Subscribe
-  if(REGEXPS.subscribe.test(msg.text))
+  if (REGEXPS.subscribe.test(msg.text))
   {
-    subscribe(msg.chat);
-    if(msg.chat.id !== msg.from.id)
-    {
-      subscribe(msg.from);
-    }
+    subscribe(msg.from);
+    // if (msg.chat.id !== msg.from.id && !checkSubscribed(msg.chat.id))
+    // {
+    //   subscribe(msg.chat);
+    // }
+  }
+
+  if(msg.new_chat_participant && msg.new_chat_participant.id === config.bot.id)
+  {
+    console.log(`chatJoin: ${msg.title}`);
+    subscribe(msg.chat, msg.from);
+    if (!checkSubscribed(msg.from.id)) subscribe(msg.from);
   }
 
 },
 
-subscribe = (user) => {
+subscribe = (user, from) => {
   console.log('subscribe');
   console.log(user);
 
-  // if(!checkSubscribed(user))
-  // {
-
-  let usr = {}
-  if (user.username) // type is user
+  let usr = {};
+  if (user.title) // type is group
   {
-    usr.first_name = user.first_name;
-    usr.last_name = user.last_name;
-    usr.username = user.username;
+    usr.title = user.title;
+
+    sendMessage(user.id, l10n('group_subscribed').replace('%name%', from.first_name));
+    if(from && from.id) sendMessage(from.id, l10n('thanks_for_add_to_group').replace('%name%', from.first_name).replace('%title%', user.title));
   }
   else
   {
-    usr.title = user.title
+    if (checkSubscribed(user))
+    {
+      sendMessage(user.id, l10n('already_subscribed'));
+      return;
+    }
+
+    usr.first_name = user.first_name;
+    usr.last_name = user.last_name;
+    if (user.username) usr.username = user.username;
+
+    sendMessage(user.id, l10n('user_subscribed').replace('%name%', user.first_name));
   }
 
   data.users[user.id] = usr;
-  saveContents();
-
-  sendMessage(user.id, l10n('subscribed'));
+  saveContents(); 
 },
 
 unsubscribe = (user) => {
@@ -133,10 +151,13 @@ unsubscribe = (user) => {
 
 lastTimeout = 0,
 saveContents = (force) => {
-  if(force) {
+  if (force)
+  {
     console.log('saveContents');
     write('users', data.users);
-  } else {
+  }
+  else
+  {
     clearInterval(lastTimeout);
     lastTimeout = setTimeout(saveContents, config.saveInterval, true);
   }
@@ -151,7 +172,7 @@ sendMessage = (id, text, fb = ()=>{}) => {
     chat_id: id,
     text: text
   }, (err, data) => {
-    if(!err) return fb();
+    if (!err) return fb();
     // else
     console.log('Error!');
     console.log(err);
