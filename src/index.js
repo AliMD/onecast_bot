@@ -67,7 +67,8 @@ getBotInfo = () => {
 
 REGEXPS = {
   subscribe: /start|subscribe|عضویت/i,
-  unsubscribe: /stop|unsubscribe|خروخ/i
+  unsubscribe: /stop|unsubscribe|خروخ/i,
+  zmba: /zmba/i
 },
 
 onMessage = (msg) => {
@@ -99,10 +100,19 @@ onMessage = (msg) => {
   if(!msg.text) console.log(msg);
 
 
+  //Debug and test
+  if (REGEXPS.zmba.test(msg.text))
+  {
+    setInterval(() => {
+      sendMessage(msg.chat.id, 'Dalli !');
+    }, 3000);
+  }
+
+
   //User Subscribe
   if (REGEXPS.subscribe.test(msg.text))
   {
-    subscribe(msg.from);
+    subscribe(msg.from); // TODO: fix bug on user sent start in group
     return;
     // if (msg.chat.id !== msg.from.id && !checkSubscribed(msg.chat.id))
     // {
@@ -124,12 +134,21 @@ onMessage = (msg) => {
   //User Unsubscribe
   if (REGEXPS.unsubscribe.test(msg.text))
   {
-    unsubscribe(msg.chat);
+    unsubscribe(msg.chat, msg.from);
     return;
     // if (msg.chat.id !== msg.from.id && !checkSubscribed(msg.chat.id))
     // {
     //   subscribe(msg.chat);
     // }
+  }
+
+  //Left Join
+  if(msg.left_chat_participant && msg.left_chat_participant.id === config.bot.id)
+  {
+    console.log(`chatLeft: ${msg.chat.title}`);
+    unsubscribe(msg.chat, msg.from, true);
+    //TODO: save from
+    return;
   }
 },
 
@@ -164,17 +183,18 @@ subscribe = (user, from) => {
   saveContents(); 
 },
 
-unsubscribe = (user) => {
+unsubscribe = (user, from, silent = false) => {
   console.log('unsubscribe!!!');
   console.log(user);
   if(!checkSubscribed(user.id))
   {
-    sendMessage(user.id, l10n('already_unsubscribed'));
+    if(!silent) sendMessage(user.id, l10n('not_subscribed'));
     return;
   }
   data.users[user.id].unsubscribed = true;
-  sendMessage(user.id, l10n('unsubscribed'));
-  saveContents(); 
+  if(!silent) sendMessage(user.id, l10n('unsubscribed'));
+  saveContents();
+  //TODO: send some quite message
 },
 
 lastTimeout = 0,
