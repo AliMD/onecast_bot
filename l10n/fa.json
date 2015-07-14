@@ -4,5 +4,6 @@
   "already_subscribed": "در جمع ما بودی! ولی خب کار از محکم کاری عیب نمیکنه.",
   "thanks_for_add_to_group": "ممنون %name% عزیز که منو به گروه %title% دعوت کردی.",
   "not_subscribed": "%name% عزیز شما عضو نیستی!",
-  "unsubscribed": "%name% عزیز عضویت شما لغو شد!"
+  "unsubscribed": "%name% عزیز عضویت شما لغو شد!",
+  "hello": "سلام بر %name% عزیز"
 }

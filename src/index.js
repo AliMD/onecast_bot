@@ -68,6 +68,7 @@ getBotInfo = () => {
 REGEXPS = {
   subscribe: /start|subscribe|عضویت/i,
   unsubscribe: /stop|unsubscribe|خروخ/i,
+  hello: /hi|hello|welcome|سلام|درورد|خوش.*مدی/i,
   zmba: /zmba/i
 },
 
@@ -106,6 +107,13 @@ onMessage = (msg) => {
     setInterval(() => {
       sendMessage(msg.chat.id, 'Dalli !');
     }, 3000);
+  }
+
+  //Hello
+  if (REGEXPS.hello.test(msg.text))
+  {
+    sendMessage(msg.chat.id, l10n('hello').replace('%name%', msg.from.first_name));
+    return;
   }
 
 
