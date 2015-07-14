@@ -67,13 +67,10 @@ getBotInfo = () => {
 
 REGEXPS = {
   subscribe: /start|subscribe|عضویت/i,
-  unsubscribe: /stop|unsubscribe|خروخ|/i
+  unsubscribe: /stop|unsubscribe|خروخ/i
 },
 
 onMessage = (msg) => {
-  console.log(`${msg.from.username}: ${msg.text}`);
-  if(!msg.text) console.log(msg);
-
   /* msg sample
   {
     message_id: 1,
@@ -94,6 +91,14 @@ onMessage = (msg) => {
   }
   */
 
+  console.log(`**** ${msg.from.username}: ${msg.text}`);
+
+  msg.date = new Date(msg.date*1000);
+  console.log(msg.date.toLocaleString());
+
+  if(!msg.text) console.log(msg);
+
+
   //User Subscribe
   if (REGEXPS.subscribe.test(msg.text))
   {
@@ -105,6 +110,7 @@ onMessage = (msg) => {
     // }
   }
 
+
   //Chat Join
   if(msg.new_chat_participant && msg.new_chat_participant.id === config.bot.id)
   {
@@ -114,8 +120,17 @@ onMessage = (msg) => {
     return;
   }
 
-  
 
+  //User Unsubscribe
+  if (REGEXPS.unsubscribe.test(msg.text))
+  {
+    unsubscribe(msg.chat);
+    return;
+    // if (msg.chat.id !== msg.from.id && !checkSubscribed(msg.chat.id))
+    // {
+    //   subscribe(msg.chat);
+    // }
+  }
 },
 
 subscribe = (user, from) => {
@@ -150,8 +165,16 @@ subscribe = (user, from) => {
 },
 
 unsubscribe = (user) => {
-  console.log('unsubscribe');
+  console.log('unsubscribe!!!');
   console.log(user);
+  if(!checkSubscribed(user.id))
+  {
+    sendMessage(user.id, l10n('already_unsubscribed'));
+    return;
+  }
+  data.users[user.id].unsubscribed = true;
+  sendMessage(user.id, l10n('unsubscribed'));
+  saveContents(); 
 },
 
 lastTimeout = 0,
@@ -187,7 +210,7 @@ sendMessage = (id, text, fb = ()=>{}) => {
 },
 
 checkSubscribed = (id) => {
-  return !!data.users[id];
+  return !!data.users[id] && !data.users[id].unsubscribed;
 },
 
 sentUnfinishedMessage = () => {
