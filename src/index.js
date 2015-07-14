@@ -11,7 +11,8 @@ var
 config = {
   token: process.env.ONECAST_BOT_TOKEN,
   saveInterval: 5000, // ms
-  updateInterval: 3000 //ms
+  updateInterval: 3000, //ms
+  admins: [58389411]
 },
 
 data = {
@@ -95,10 +96,14 @@ onMessage = (msg) => {
 
   console.log(`**** ${msg.from.username}: ${msg.text}`);
 
-  msg.date = new Date(msg.date*1000);
-  console.log(msg.date.toLocaleString());
+  let
+  msgDate = new Date(msg.date*1000),
+  fromAdmin = isAdmin(msg.chat.id)
+  ;
+  console.log(msgDate.toLocaleString());
 
   if(!msg.text) console.log(msg);
+
 
 
   //Debug and test
@@ -158,6 +163,9 @@ onMessage = (msg) => {
     //TODO: save from
     return;
   }
+
+  // msg.data = msgDate.toLocaleString();
+  if(!fromAdmin) notifyAdmins(`@${msg.from.username}\n${JSON.stringify(msg, null, 2)}`);
 },
 
 subscribe = (user, from) => {
@@ -188,7 +196,8 @@ subscribe = (user, from) => {
   }
 
   data.users[user.id] = usr;
-  saveContents(); 
+  saveContents();
+  notifyAdmins(`New user subscribe: ${JSON.stringify({user: user, from: from}, null, 2)}`);
 },
 
 unsubscribe = (user, from, silent = false) => {
@@ -204,6 +213,7 @@ unsubscribe = (user, from, silent = false) => {
   if(!silent) sendMessage(user.id, l10n('unsubscribed').replace('%name%', user.first_name));
   saveContents();
   //TODO: send some quite message
+  notifyAdmins(`user unsubscribe: ${JSON.stringify({user: user, from: from}, null, 2)}`);
 },
 
 lastTimeout = 0,
@@ -244,6 +254,16 @@ checkSubscribed = (id) => {
 
 sentUnfinishedMessage = () => {
   // TODO: sent unfinished message from a waiting list
+},
+
+notifyAdmins = (msg) => {
+  config.admins.forEach((admin)=>{
+    sendMessage(admin, msg);
+  });
+},
+
+isAdmin = (id) => {
+  return config.admins.indexOf(parseInt(id, 10)) > -1;
 }
 
 ;
