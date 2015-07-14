@@ -2,5 +2,7 @@
   "user_subscribed": "سلام %name% عزیز، به جمع ما خوش آمدی.",
   "group_subscribed": "سلام به همه ی دوستان عزیز این گروه\nو ممنون از %name% عزیز که منو به جمعتون دعوت کرد.",
   "already_subscribed": "در جمع ما بودی! ولی خب کار از محکم کاری عیب نمیکنه.",
-  "thanks_for_add_to_group": "ممنون %name% عزیز که منو به گروه %title% دعوت کردی."
+  "thanks_for_add_to_group": "ممنون %name% عزیز که منو به گروه %title% دعوت کردی.",
+  "not_subscribed": "%name% عزیز شما عضو نیستی!",
+  "unsubscribed": "%name% عزیز عضویت شما لغو شد!"
 }

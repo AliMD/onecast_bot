@@ -134,7 +134,7 @@ onMessage = (msg) => {
   //User Unsubscribe
   if (REGEXPS.unsubscribe.test(msg.text))
   {
-    unsubscribe(msg.chat, msg.from);
+    unsubscribe(msg.chat, msg.from, !!msg.chat.title); // silent in group temporary
     return;
     // if (msg.chat.id !== msg.from.id && !checkSubscribed(msg.chat.id))
     // {
@@ -186,13 +186,14 @@ subscribe = (user, from) => {
 unsubscribe = (user, from, silent = false) => {
   console.log('unsubscribe!!!');
   console.log(user);
+
   if(!checkSubscribed(user.id))
   {
-    if(!silent) sendMessage(user.id, l10n('not_subscribed'));
+    if(!silent) sendMessage(user.id, l10n('not_subscribed').replace('%name%', user.first_name));
     return;
   }
   data.users[user.id].unsubscribed = true;
-  if(!silent) sendMessage(user.id, l10n('unsubscribed'));
+  if(!silent) sendMessage(user.id, l10n('unsubscribed').replace('%name%', user.first_name));
   saveContents();
   //TODO: send some quite message
 },
