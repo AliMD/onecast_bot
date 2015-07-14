@@ -10,8 +10,8 @@ var
 
 config = {
   token: process.env.ONECAST_BOT_TOKEN,
-  saveInterval: 3000, // ms
-  updateInterval: 1000 //ms
+  saveInterval: 5000, // ms
+  updateInterval: 3000 //ms
 },
 
 data = {
@@ -42,10 +42,10 @@ loadData = () => {
   console.log('loadData');
 
   data.posts = read('posts', []);
-  console.log(`${data.posts} posts loaded`);
+  console.log(`${data.posts.length} posts loaded`);
 
   data.users = read('users', {});
-  console.log(`${data.users} users loaded`);
+  console.log(`${Object.keys(data.users).length} users loaded`);
 },
 
 getBotInfo = () => {
@@ -94,22 +94,27 @@ onMessage = (msg) => {
   }
   */
 
-  //Subscribe
+  //User Subscribe
   if (REGEXPS.subscribe.test(msg.text))
   {
     subscribe(msg.from);
+    return;
     // if (msg.chat.id !== msg.from.id && !checkSubscribed(msg.chat.id))
     // {
     //   subscribe(msg.chat);
     // }
   }
 
+  //Chat Join
   if(msg.new_chat_participant && msg.new_chat_participant.id === config.bot.id)
   {
-    console.log(`chatJoin: ${msg.title}`);
+    console.log(`chatJoin: ${msg.chat.title}`);
     subscribe(msg.chat, msg.from);
     if (!checkSubscribed(msg.from.id)) subscribe(msg.from);
+    return;
   }
+
+  
 
 },
 
@@ -127,7 +132,7 @@ subscribe = (user, from) => {
   }
   else
   {
-    if (checkSubscribed(user))
+    if (checkSubscribed(user.id))
     {
       sendMessage(user.id, l10n('already_subscribed'));
       return;
