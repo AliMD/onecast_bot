@@ -307,6 +307,13 @@ recordNewPost = (userId) => {
   sendMessage(userId, 'Recording...\nYou can /cancel or /end the process any time.');
   sendMessage(userId, `Please enter post id.`);
   requestMessage[userId] = (msg) => {
+    if(msg.text === '/cancel')
+    {
+      delete requestMessage[userId];
+      sendMessage(userId, `Ok, recording cancel!\n${msgs.length} has been lost.`);
+      return;
+    }
+
     if(postId < 0)
     {
       let id = parseInt(fixNumbers(msg.text), 10);
@@ -322,25 +329,18 @@ recordNewPost = (userId) => {
       return;
     }
 
-    if(msg.text === '/cancel')
-    {
-      delete requestMessage[userId];
-      sendMessage(userId, `Ok, recording cancel!\n${msgs.length} has been lost.`);
-      return false;
-    }
-
     if(msg.text === '/end')
     {
       delete requestMessage[userId];
       sendMessage(userId, `Ok, recording end.`);
-      data.posts.push({
+      data.posts[postId] = {
         from: userId,
         messages: msgs,
         sent_count: 0
-      });
+      };
       write('posts', data.posts);
       sendMessage(userId, `${msgs.length} messages recorded for post_id:${data.posts.length-1}`);
-      return false;
+      return;
     }
 
     msgs.push(msg.message_id);
@@ -362,13 +362,20 @@ fixNumbers = (str) => {
 
 sendPost = (userId, postId) => {
   let post = data.posts[postId];
+
+  if(!post)
+  {
+    sendMessage(userId, l10n('post404').replace('%max_post_id%', data.posts.length-1))
+    return;
+  }
+
   for(let i=0, msglen = post.messages.length; i < msglen; i++)
   {
-    setTimeout((i)=>{
+    setTimeout((i) => {
       bot.forwardMessage({
         chat_id: userId,
         from_chat_id: post.from,
-        message_id: post.messages[i];
+        message_id: post.messages[i]
       });
     }, i*1000, i);
   }
