@@ -74,6 +74,8 @@ REGEXPS = {
 
 zmba_iv = 0,
 
+requestMessage = {},
+
 onMessage = (msg) => {
   /* msg sample
   {
@@ -103,8 +105,14 @@ onMessage = (msg) => {
   ;
   console.log(msgDate.toLocaleString());
 
-  if(!msg.text) console.log(msg);
+  // if(!msg.text) console.log(msg);
 
+  // Special messages
+  if(typeof requestMessage[msg.from.id] === 'function')
+  {
+    requestMessage[msg.from.id](msg);
+    return;
+  }
 
   //Debug and test
   if (msg.text === 'dalli')
@@ -174,6 +182,11 @@ onMessage = (msg) => {
   if(!fromAdmin){
     notifyAdmins(`@${msg.from.username}\n${JSON.stringify(msg, null, 2)}`);
     // bot.sendChatAction({chat_id: msg.chat.id, action: 'Sending to admin ...'});
+  }
+
+  if(fromAdmin && msg.text === "/newpost")
+  {
+    recordNewPost(msg.from.id);
   }
 },
 
@@ -273,6 +286,37 @@ notifyAdmins = (msg) => {
 
 isAdmin = (id) => {
   return config.admins.indexOf(parseInt(id, 10)) > -1;
+},
+
+recordNewPost = (fromId) => {
+  if(requestMessage[fromId])
+  {
+    sendMessage(fromId, 'Please /cancel last action.');
+    return;
+  }
+
+  let msgs = [];
+  sendMessage(fromId, 'Recording...\nYou can /cancel or /end the process any time.');
+  requestMessage[fromId] = (msg) => {
+    if(msg.text === '/cancel')
+    {
+      delete requestMessage[fromId];
+      sendMessage(fromId, `Ok, recording cancel!\n${msgs.length} has been lost.`);
+      return false;
+    }
+
+    if(msg.text === '/end')
+    {
+      delete requestMessage[fromId];
+      sendMessage(fromId, `Ok, recording end.`);
+      data.posts.push(msgs);
+      write('posts', data.posts);
+      sendMessage(fromId, `${msgs.length} messages recorded for post_id:${data.posts.length-1}`);
+      return false;
+    }
+
+    msgs.push(msg.message_id);
+  }
 }
 
 ;
