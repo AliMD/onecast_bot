@@ -207,6 +207,14 @@ onMessage = (msg) => {
     return;
   }
 
+  // Send Post to All
+  if(fromAdmin && (msg.text || '').trim().indexOf('/broadcast') === 0)
+  {
+    let postId = parseInt(msg.text.replace('/broadcast', '').trim(), 10);
+    sendPost2All(postId);
+    return;
+  }
+
   //Notify other messages to admin
   // msg.data = msgDate.toLocaleString();
   if(!fromAdmin){
@@ -383,7 +391,7 @@ recordNewPost = (userId) => {
 persianNumbers = [/۰/g, /۱/g, /۲/g, /۳/g, /۴/g, /۵/g, /۶/g, /۷/g, /۸/g, /۹/g],
 arabicNumbers  = [/٠/g, /١/g, /٢/g, /٣/g, /٤/g, /٥/g, /٦/g, /٧/g, /٨/g, /٩/g],
 fixNumbers = (str) => {
-  console.log(`fixNumbers: ${str}`);
+  // console.log(`fixNumbers: ${str}`);
   if(typeof str === 'string')
   {
     for(let i=0; i<10; i++)
@@ -417,6 +425,28 @@ sendPost = (userId, postId) => {
 
   post.sent_count++;
   saveContents();
+},
+
+sendPost2All = (postId) => {
+  console.log(`sendPost2All: ${postId}`);
+  notifyAdmins(`sendPost2All: ${postId}`);
+
+  if(!postId || !data.posts[postId])
+  {
+    notifyAdmins(`sendPost2All: post id not found`);
+    return;
+  }
+
+  let users = Object.keys(data.users);
+  users.forEach( (userId, i) => {
+    setTimeout(() => {
+      sendPost(userId, postId);
+    }, i*config.waitForPosts);
+  });
+
+  setTimeout(() => {
+    notifyAdmins(`Post ${postId} sent`);
+  }, (users.length+10)*config.waitForPosts); // +10 for max post msg len maybe is 10
 }
 
 ;
