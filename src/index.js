@@ -301,7 +301,7 @@ recordNewPost = (userId) => {
   requestMessage[userId] = (msg) => {
     if(postId < 0)
     {
-      let id = parseInt(msg.text, 10);
+      let id = parseInt(fixNumbers(msg.text), 10);
       if(id > -1)
       {
         postId = id;
@@ -337,6 +337,18 @@ recordNewPost = (userId) => {
 
     msgs.push(msg.message_id);
   }
+},
+
+persianNumbers = [/۱/g, /۲/g, /۳/g, /۴/g, /۵/g, /۶/g, /۷/g, /۸/g, /۹/g, /۰/g],
+fixNumbers = (str) => {
+  if(typeof str === 'string')
+  {
+    for(let i=0; i<10; i++)
+    {
+      str = str.replace(persianNumbers[i], i);
+    }
+  }
+  return str;
 }
 
 ;
