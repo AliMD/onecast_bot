@@ -167,7 +167,7 @@ onMessage = (msg) => {
   // msg.data = msgDate.toLocaleString();
   if(!fromAdmin){
     notifyAdmins(`@${msg.from.username}\n${JSON.stringify(msg, null, 2)}`);
-    bot.sendChatAction(msg.chat.id, 'Sending to admin ...');
+    // bot.sendChatAction({chat_id: msg.chat.id, action: 'Sending to admin ...'});
   }
 },
 
