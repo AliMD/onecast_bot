@@ -184,9 +184,17 @@ onMessage = (msg) => {
     // bot.sendChatAction({chat_id: msg.chat.id, action: 'Sending to admin ...'});
   }
 
+  // New post
   if(fromAdmin && msg.text === "/newpost")
   {
     recordNewPost(msg.from.id);
+  }
+
+  // Send post
+  let postId = parseInt(fixNumbers((msg.text||'').trim()), 10);
+  if(postId > -1)
+  {
+    sendPost(msg.chat.id, postId);
   }
 },
 
@@ -340,15 +348,30 @@ recordNewPost = (userId) => {
 },
 
 persianNumbers = [/۱/g, /۲/g, /۳/g, /۴/g, /۵/g, /۶/g, /۷/g, /۸/g, /۹/g, /۰/g],
+arabicNumbers  = [/١/g, /٢/g, /٣/g, /٤/g, /٥/g, /٦/g, /٧/g, /٨/g, /٩/g, /٠/g],
 fixNumbers = (str) => {
   if(typeof str === 'string')
   {
     for(let i=0; i<10; i++)
     {
-      str = str.replace(persianNumbers[i], i);
+      str = str.replace(persianNumbers[i], i).replace(arabicNumbers[i], i);
     }
   }
   return str;
+},
+
+sendPost = (userId, postId) => {
+  let post = data.posts[postId];
+  for(let i=0, msglen = post.messages.length; i < msglen; i++)
+  {
+    setTimeout((i)=>{
+      bot.forwardMessage({
+        chat_id: userId,
+        from_chat_id: post.from,
+        message_id: post.messages[i];
+      });
+    }, i*1000, i);
+  }
 }
 
 ;
