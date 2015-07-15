@@ -69,9 +69,10 @@ getBotInfo = () => {
 REGEXPS = {
   subscribe: /start|subscribe|عضویت/i,
   unsubscribe: /stop|unsubscribe|خروخ/i,
-  hello: /hi|hello|welcome|سلام|درورد|خوش.*مدی/i,
-  zmba: /zmba/i
+  hello: /hi|hello|welcome|سلام|درورد|خوش.*مدی/i
 },
+
+zmba_iv = 0,
 
 onMessage = (msg) => {
   /* msg sample
@@ -105,13 +106,18 @@ onMessage = (msg) => {
   if(!msg.text) console.log(msg);
 
 
-
   //Debug and test
-  if (REGEXPS.zmba.test(msg.text))
+  if (msg.text === 'dalli')
   {
-    setInterval(() => {
+    zmba_iv = setInterval(() => {
       sendMessage(msg.chat.id, 'Dalli !');
-    }, 3000);
+    }, 2500);
+    return;
+  }
+  if (zmba_iv && msg.text === 'stop')
+  {
+    clearInterval(zmba_iv);
+    zmba_iv = 0;
   }
 
   //Hello
