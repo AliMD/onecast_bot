@@ -288,30 +288,50 @@ isAdmin = (id) => {
   return config.admins.indexOf(parseInt(id, 10)) > -1;
 },
 
-recordNewPost = (fromId) => {
-  if(requestMessage[fromId])
+recordNewPost = (userId) => {
+  if(requestMessage[userId])
   {
-    sendMessage(fromId, 'Please /cancel last action.');
+    sendMessage(userId, 'Please /cancel last action.');
     return;
   }
 
-  let msgs = [];
-  sendMessage(fromId, 'Recording...\nYou can /cancel or /end the process any time.');
-  requestMessage[fromId] = (msg) => {
+  let postId = -1, msgs = [];
+  sendMessage(userId, 'Recording...\nYou can /cancel or /end the process any time.');
+  sendMessage(userId, `Please enter post id.`);
+  requestMessage[userId] = (msg) => {
+    if(postId < 0)
+    {
+      let id = parseInt(msg.text, 10);
+      if(id > -1)
+      {
+        postId = id;
+        sendMessage(userId, `Ok, please enter your messages in any type ;)`);
+      }
+      else
+      {
+        sendMessage(userId, `Please enter a positive number.`);
+      }
+      return;
+    }
+
     if(msg.text === '/cancel')
     {
-      delete requestMessage[fromId];
-      sendMessage(fromId, `Ok, recording cancel!\n${msgs.length} has been lost.`);
+      delete requestMessage[userId];
+      sendMessage(userId, `Ok, recording cancel!\n${msgs.length} has been lost.`);
       return false;
     }
 
     if(msg.text === '/end')
     {
-      delete requestMessage[fromId];
-      sendMessage(fromId, `Ok, recording end.`);
-      data.posts.push(msgs);
+      delete requestMessage[userId];
+      sendMessage(userId, `Ok, recording end.`);
+      data.posts.push({
+        from: userId,
+        messages: msgs,
+        sent_count: 0
+      });
       write('posts', data.posts);
-      sendMessage(fromId, `${msgs.length} messages recorded for post_id:${data.posts.length-1}`);
+      sendMessage(userId, `${msgs.length} messages recorded for post_id:${data.posts.length-1}`);
       return false;
     }
 
