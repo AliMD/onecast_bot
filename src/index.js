@@ -9,7 +9,7 @@ import {read, write} from './files';
 var
 
 config = {
-  token: process.env.ONECAST_BOT_TOKEN,
+  token: process.env.BOT_TOKEN,
   saveInterval: 5000, // ms
   updateInterval: 3000, //ms
   admins: [58389411]
