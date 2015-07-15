@@ -12,7 +12,7 @@ config = {
   token: process.env.BOT_TOKEN,
   saveInterval: 5000, // ms
   updateInterval: 3000, //ms
-  waitForPosts: 100, //ms
+  waitForPosts: 1000, //ms
   admins: [58389411]
 },
 
@@ -211,7 +211,14 @@ onMessage = (msg) => {
   if(fromAdmin && (msg.text || '').trim().indexOf('/broadcast') === 0)
   {
     let postId = parseInt(msg.text.replace('/broadcast', '').trim(), 10);
-    sendPost2All(postId);
+    if(!postId)
+    {
+      broadcastMessage(msg.from.id);
+    }
+    else
+    {
+      sendPost2All(postId);
+    }
     return;
   }
 
@@ -439,12 +446,12 @@ sendPost2All = (postId) => {
   users.forEach( (userId, i) => {
     setTimeout(() => {
       sendPost(userId, postId);
-    }, i*config.waitForPosts);
+    }, i*config.waitForPosts*2);
   });
 
   setTimeout(() => {
     notifyAdmins(`Post ${postId} sent`);
-  }, (users.length+10)*config.waitForPosts); // +10 for max post msg len maybe is 10
+  }, (users.length+5)*config.waitForPosts*2);
 },
 
 broadcastMessage = (userId) => {
@@ -479,14 +486,14 @@ broadcastMessage = (userId) => {
         setTimeout((i) => {
           bot.forwardMessage({
             chat_id: userId,
-            from_chat_id: post.from,
-            message_id: post.messages[i]
+            from_chat_id: userId,
+            message_id: msgs[i]
           });
         }, i*config.waitForPosts, i);
       }
-      setTimeout((i) => {
+      setTimeout(() => {
         sendMessage(userId, `Next ?\n/cancel\n/preview\n/send2all`);
-      }, msglen*config.waitForPosts, i);
+      }, msgs.length*config.waitForPosts);
       return;
     }
 
@@ -495,19 +502,19 @@ broadcastMessage = (userId) => {
       delete requestMessage[userId];
       
       let users = Object.keys(data.users);
-      users.forEach( (userId, i) => {
+      users.forEach( (uid, i) => {
         setTimeout(() => {
           for(let i=0, msglen = msgs.length; i < msglen; i++)
           {
             setTimeout((i) => {
               bot.forwardMessage({
-                chat_id: userId,
-                from_chat_id: post.from,
-                message_id: post.messages[i]
+                chat_id: uid,
+                from_chat_id: userId,
+                message_id: msgs[i]
               });
             }, i*config.waitForPosts, i);
           }
-        }, i*config.waitForPosts);
+        }, i*config.waitForPosts*2);
       });
 
       setTimeout(() => {
