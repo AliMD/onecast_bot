@@ -12,6 +12,7 @@ config = {
   token: process.env.BOT_TOKEN,
   saveInterval: 5000, // ms
   updateInterval: 3000, //ms
+  waitForPosts: 100, //ms
   admins: [58389411]
 },
 
@@ -399,7 +400,7 @@ sendPost = (userId, postId) => {
         from_chat_id: post.from,
         message_id: post.messages[i]
       });
-    }, i*1000, i);
+    }, i*config.waitForPosts, i);
   }
 
   post.sent_count++;
