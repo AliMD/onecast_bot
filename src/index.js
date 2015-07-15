@@ -210,8 +210,7 @@ onMessage = (msg) => {
   //Notify other messages to admin
   // msg.data = msgDate.toLocaleString();
   if(!fromAdmin){
-    notifyAdmins(`@${msg.from.username}\n${JSON.stringify(msg, null, 2)}`);
-    //TODO: forward message
+    notifyAdmins(msg);
   }
 },
 
@@ -308,6 +307,15 @@ sentUnfinishedMessage = () => {
 notifyAdmins = (msg) => {
   console.log(`notifyAdmins: ${msg}`);
   config.admins.forEach((admin)=>{
+    if(typeof msg === 'object' && msg.message_id)
+    {
+      bot.forwardMessage({
+        chat_id: admin,
+        from_chat_id: msg.from.id,
+        message_id: msg.message_id
+      });
+      return true;
+    }
     sendMessage(admin, msg);
   });
 },
@@ -360,7 +368,7 @@ recordNewPost = (userId) => {
         sent_count: 0
       };
       saveContents();
-      sendMessage(userId, `${msgs.length} messages recorded for post_id:${data.posts.length-1}`);
+      sendMessage(userId, `${msgs.length} messages recorded for post_id:${postId}`);
       return;
     }
 
@@ -368,8 +376,8 @@ recordNewPost = (userId) => {
   }
 },
 
-persianNumbers = [/۱/g, /۲/g, /۳/g, /۴/g, /۵/g, /۶/g, /۷/g, /۸/g, /۹/g, /۰/g],
-arabicNumbers  = [/١/g, /٢/g, /٣/g, /٤/g, /٥/g, /٦/g, /٧/g, /٨/g, /٩/g, /٠/g],
+persianNumbers = [/۰/g, /۱/g, /۲/g, /۳/g, /۴/g, /۵/g, /۶/g, /۷/g, /۸/g, /۹/g],
+arabicNumbers  = [/٠/g, /١/g, /٢/g, /٣/g, /٤/g, /٥/g, /٦/g, /٧/g, /٨/g, /٩/g],
 fixNumbers = (str) => {
   console.log(`fixNumbers: ${str}`);
   if(typeof str === 'string')
