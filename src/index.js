@@ -105,7 +105,11 @@ onMessage = (msg) => {
   ;
   console.log(msgDate.toLocaleString());
 
-  // if(!msg.text) console.log(msg);
+  //remove bot username
+  if(msg.text)
+  {
+    msg.text = msg.text.replace(`@${config.bot.username} `, '');
+  }
 
   // Special messages
   if(typeof requestMessage[msg.from.id] === 'function')
@@ -178,16 +182,11 @@ onMessage = (msg) => {
     return;
   }
 
-  // msg.data = msgDate.toLocaleString();
-  if(!fromAdmin){
-    notifyAdmins(`@${msg.from.username}\n${JSON.stringify(msg, null, 2)}`);
-    // bot.sendChatAction({chat_id: msg.chat.id, action: 'Sending to admin ...'});
-  }
-
   // New post
   if(fromAdmin && msg.text === "/newpost")
   {
     recordNewPost(msg.from.id);
+    return;
   }
 
   // Send post
@@ -195,6 +194,14 @@ onMessage = (msg) => {
   if(postId > -1)
   {
     sendPost(msg.chat.id, postId);
+    return;
+  }
+
+  //Notify other messages to admin
+  // msg.data = msgDate.toLocaleString();
+  if(!fromAdmin){
+    notifyAdmins(`@${msg.from.username}\n${JSON.stringify(msg, null, 2)}`);
+    // bot.sendChatAction({chat_id: msg.chat.id, action: 'Sending to admin ...'});
   }
 },
 
@@ -252,6 +259,7 @@ saveContents = (force) => {
   {
     console.log('saveContents');
     write('users', data.users);
+    write('posts', data.posts);
   }
   else
   {
@@ -338,7 +346,7 @@ recordNewPost = (userId) => {
         messages: msgs,
         sent_count: 0
       };
-      write('posts', data.posts);
+      saveContents();
       sendMessage(userId, `${msgs.length} messages recorded for post_id:${data.posts.length-1}`);
       return;
     }
@@ -379,6 +387,9 @@ sendPost = (userId, postId) => {
       });
     }, i*1000, i);
   }
+
+  post.sent_count++;
+  saveContents();
 }
 
 ;
