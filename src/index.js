@@ -345,8 +345,7 @@ recordNewPost = (userId) => {
   }
 
   let postId = -1, msgs = [];
-  sendMessage(userId, 'Recording...\nYou can /cancel or /end the process any time.');
-  sendMessage(userId, `Please enter post id.`);
+  sendMessage(userId, 'Recording...\nYou can /cancel or /end the process any time.\n\nPlease enter post id.');
   requestMessage[userId] = (msg) => {
     if(msg.text === '/cancel')
     {
@@ -373,14 +372,13 @@ recordNewPost = (userId) => {
     if(msg.text === '/end')
     {
       delete requestMessage[userId];
-      sendMessage(userId, `Ok, recording end.`);
       data.posts[postId] = {
         from: userId,
         messages: msgs,
         sent_count: 0
       };
       saveContents();
-      sendMessage(userId, `${msgs.length} messages recorded for post_id:${postId}`);
+      sendMessage(userId, `Ok, recording end\n${msgs.length} messages recorded for post_id:${postId}`);
       return;
     }
 
@@ -447,6 +445,83 @@ sendPost2All = (postId) => {
   setTimeout(() => {
     notifyAdmins(`Post ${postId} sent`);
   }, (users.length+10)*config.waitForPosts); // +10 for max post msg len maybe is 10
+},
+
+broadcastMessage = (userId) => {
+  console.log(`broadcastMessage: ${userId}`);
+  if(requestMessage[userId])
+  {
+    sendMessage(userId, 'Please /cancel last action.');
+    return;
+  }
+
+  let end = false, msgs = [];
+  sendMessage(userId, 'Recording...\nYou can /cancel or /end the process any time.');
+  requestMessage[userId] = (msg) => {
+    if(msg.text === '/cancel')
+    {
+      delete requestMessage[userId];
+      sendMessage(userId, `Ok, recording cancel!\n${msgs.length} has been lost.`);
+      return;
+    }
+
+    if(msg.text === '/end')
+    {
+      sendMessage(userId, `Ok, recording end\n${msgs.length} messages recorded\n\nNext ?\n/cancel\n/preview\n/send2all`);
+      end = true;
+      return;
+    }
+
+    if(end && msg.text === '/preview')
+    {
+      for(let i=0, msglen = msgs.length; i < msglen; i++)
+      {
+        setTimeout((i) => {
+          bot.forwardMessage({
+            chat_id: userId,
+            from_chat_id: post.from,
+            message_id: post.messages[i]
+          });
+        }, i*config.waitForPosts, i);
+      }
+      setTimeout((i) => {
+        sendMessage(userId, `Next ?\n/cancel\n/preview\n/send2all`);
+      }, msglen*config.waitForPosts, i);
+      return;
+    }
+
+    if(end && msg.text === '/send2all')
+    {
+      delete requestMessage[userId];
+      
+      let users = Object.keys(data.users);
+      users.forEach( (userId, i) => {
+        setTimeout(() => {
+          for(let i=0, msglen = msgs.length; i < msglen; i++)
+          {
+            setTimeout((i) => {
+              bot.forwardMessage({
+                chat_id: userId,
+                from_chat_id: post.from,
+                message_id: post.messages[i]
+              });
+            }, i*config.waitForPosts, i);
+          }
+        }, i*config.waitForPosts);
+      });
+
+      setTimeout(() => {
+        notifyAdmins(`messages sent`);
+      }, (users.length+msgs.length)*config.waitForPosts);
+
+      return;
+    }
+
+    if(!end)
+    {
+      msgs.push(msg.message_id);
+    }
+  }
 }
 
 ;
