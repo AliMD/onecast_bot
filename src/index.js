@@ -69,7 +69,8 @@ getBotInfo = () => {
 REGEXPS = {
   subscribe: /start|subscribe|عضویت/i,
   unsubscribe: /stop|unsubscribe|خروخ/i,
-  hello: /hi|hello|welcome|سلام|درورد|خوش.*مدی/i
+  hello: /hi|hello|welcome|سلام|درورد|خوش.*مدی/i,
+  help: /help|راهنما/i
 },
 
 zmba_iv = 0,
@@ -132,6 +133,14 @@ onMessage = (msg) => {
     zmba_iv = 0;
   }
 
+  // help
+  if (REGEXPS.help.test(msg.text))
+  {
+    sendPost(msg.chat.id, 0); // post 0 always is help
+    return;
+  }
+
+
   //Hello
   if (REGEXPS.hello.test(msg.text))
   {
@@ -190,7 +199,7 @@ onMessage = (msg) => {
   }
 
   // Send post
-  let postId = parseInt(fixNumbers((msg.text||'').trim()), 10);
+  let postId = parseInt(fixNumbers((msg.text || '').trim()), 10);
   if(postId > -1)
   {
     sendPost(msg.chat.id, postId);
@@ -201,7 +210,7 @@ onMessage = (msg) => {
   // msg.data = msgDate.toLocaleString();
   if(!fromAdmin){
     notifyAdmins(`@${msg.from.username}\n${JSON.stringify(msg, null, 2)}`);
-    // bot.sendChatAction({chat_id: msg.chat.id, action: 'Sending to admin ...'});
+    //TODO: forward message
   }
 },
 
@@ -255,6 +264,7 @@ unsubscribe = (user, from, silent = false) => {
 
 lastTimeout = 0,
 saveContents = (force) => {
+  console.log(`saveContents: ${force?'force':'request'}`);
   if (force)
   {
     console.log('saveContents');
@@ -295,6 +305,7 @@ sentUnfinishedMessage = () => {
 },
 
 notifyAdmins = (msg) => {
+  console.log(`notifyAdmins: ${msg}`);
   config.admins.forEach((admin)=>{
     sendMessage(admin, msg);
   });
@@ -305,6 +316,7 @@ isAdmin = (id) => {
 },
 
 recordNewPost = (userId) => {
+  console.log(`recordNewPost: ${userId}`);
   if(requestMessage[userId])
   {
     sendMessage(userId, 'Please /cancel last action.');
@@ -358,6 +370,7 @@ recordNewPost = (userId) => {
 persianNumbers = [/۱/g, /۲/g, /۳/g, /۴/g, /۵/g, /۶/g, /۷/g, /۸/g, /۹/g, /۰/g],
 arabicNumbers  = [/١/g, /٢/g, /٣/g, /٤/g, /٥/g, /٦/g, /٧/g, /٨/g, /٩/g, /٠/g],
 fixNumbers = (str) => {
+  console.log(`fixNumbers: ${str}`);
   if(typeof str === 'string')
   {
     for(let i=0; i<10; i++)
@@ -369,6 +382,7 @@ fixNumbers = (str) => {
 },
 
 sendPost = (userId, postId) => {
+  console.log(`sendPost: ${postId} to ${userId}`);
   let post = data.posts[postId];
 
   if(!post)
