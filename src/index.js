@@ -314,8 +314,12 @@ notifyAdmins = (msg) => {
         from_chat_id: msg.from.id,
         message_id: msg.message_id
       });
+      let obj = {from: msg.from};
+      if(msg.from.id !== msg.chat.id) obj.chat = msg.chat;
+      sendMessage(admin, JSON.stringify(obj, null, 2));
       return true;
     }
+
     sendMessage(admin, msg);
   });
 },
