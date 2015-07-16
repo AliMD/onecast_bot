@@ -551,8 +551,8 @@ uploadAudio = (userId, path) => {
     bot.sendChatAction({
       chat_id: userId,
       action: 'upload_audio'
-    }, 6000);
-  });
+    });
+  }, 6000);
 
   bot.sendAudio({
     chat_id: userId,
