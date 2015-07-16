@@ -463,6 +463,7 @@ sendPost2All = (postId) => {
 
   let users = Object.keys(data.users);
   users.forEach( (userId, i) => {
+    if(data.users[userId].unsubscribed) return true;
     setTimeout(() => {
       sendPost(userId, postId);
     }, i*config.waitForPosts*2);
@@ -522,6 +523,7 @@ broadcastMessage = (userId) => {
       
       let users = Object.keys(data.users);
       users.forEach( (uid, i) => {
+        if(data.users[uid].unsubscribed) return true;
         setTimeout(() => {
           for(let i=0, msglen = msgs.length; i < msglen; i++)
           {
