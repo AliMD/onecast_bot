@@ -546,13 +546,16 @@ broadcastMessage = (userId) => {
 uploadAudio = (userId, path) => {
   console.log(`uploadAudio for user ${userId}: ${path}`);
 
-  var notifyIv = setInterval(() => {
+  var 
+  notifyfn = () => {
     console.log('send sendChatAction upload_audio');
     bot.sendChatAction({
       chat_id: userId,
       action: 'upload_audio'
     });
-  }, 6000);
+  },
+  notifyIv = setInterval(notifyfn, 5000)
+  ;
 
   bot.sendAudio({
     chat_id: userId,
@@ -563,6 +566,7 @@ uploadAudio = (userId, path) => {
     clearInterval(notifyIv);
     sendMessage(userId, debug);
   });
+  notifyfn();
 }
 
 ;
