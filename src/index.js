@@ -9,6 +9,7 @@ import {read, write} from './files';
 var
 
 config = {
+  bot: {},
   token: process.env.BOT_TOKEN,
   saveInterval: 5000, // ms
   updateInterval: 3000, //ms
@@ -293,13 +294,13 @@ saveContents = (force) => {
   console.log(`saveContents: ${force?'force':'request'}`);
   if (force)
   {
-    console.log('saveContents');
+    lastTimeout = 0;
     write('users', data.users);
     write('posts', data.posts);
   }
   else
   {
-    clearInterval(lastTimeout);
+    if(lastTimeout) clearTimeout(lastTimeout);
     lastTimeout = setTimeout(saveContents, config.saveInterval, true);
   }
 },
@@ -545,11 +546,12 @@ broadcastMessage = (userId) => {
 uploadAudio = (userId, path) => {
   console.log(`uploadAudio for user ${userId}: ${path}`);
 
-  let notifyIv = setInterval(() => {
+  var notifyIv = setInterval(() => {
+    console.log('send sendChatAction upload_audio');
     bot.sendChatAction({
       chat_id: userId,
       action: 'upload_audio'
-    }, 5000);
+    }, 6000);
   });
 
   bot.sendAudio({
