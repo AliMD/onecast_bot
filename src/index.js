@@ -114,6 +114,11 @@ onMessage = (msg) => {
   }
 
   // Special messages
+  if(typeof requestMessage[msg.chat.id] === 'function')
+  {
+    requestMessage[msg.chat.id](msg);
+    return;
+  }
   if(typeof requestMessage[msg.from.id] === 'function')
   {
     requestMessage[msg.from.id](msg);
@@ -195,7 +200,7 @@ onMessage = (msg) => {
   // New post
   if(fromAdmin && msg.text === "/newpost")
   {
-    recordNewPost(msg.from.id);
+    recordNewPost(msg.chat.id);
     return;
   }
 
@@ -213,13 +218,19 @@ onMessage = (msg) => {
     let postId = parseInt(msg.text.replace('/broadcast', '').trim(), 10);
     if(!postId)
     {
-      broadcastMessage(msg.from.id);
+      broadcastMessage(msg.chat.id);
     }
     else
     {
       sendPost2All(postId);
     }
     return;
+  }
+
+  // upload audio
+  if(fromAdmin && (msg.text || '').trim().indexOf('/uploadaudio ') === 0)
+  {
+    uploadAudio(msg.chat.id, msg.text.replace('/uploadaudio ', '').trim());
   }
 
   //Notify other messages to admin
@@ -529,6 +540,22 @@ broadcastMessage = (userId) => {
       msgs.push(msg.message_id);
     }
   }
+},
+
+uploadAudio = (userId, path) => {
+  console.log(`uploadAudio for user ${userId}: ${path}`);
+  bot.sendChatAction({
+    chat_id: userId,
+    action: 'upload_audio'
+  });
+  bot.sendAudio({
+    chat_id: userId,
+    audio: path.trim()
+  }, (err, data) => {
+    let debug = JSON.stringify({err: err, data: data}, null, 2);
+    console.log(`audioSent\n${debug}`);
+    sendMessage(userId, debug);
+  });
 }
 
 ;
