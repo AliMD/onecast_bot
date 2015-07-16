@@ -11,7 +11,7 @@ var
 config = {
   bot: {},
   token: process.env.BOT_TOKEN,
-  saveInterval: 5000, // ms
+  saveInterval: 10000, // ms
   updateInterval: 3000, //ms
   waitForPosts: 1000, //ms
   admins: [58389411]
@@ -436,6 +436,13 @@ sendPost = (userId, postId) => {
         chat_id: userId,
         from_chat_id: post.from,
         message_id: post.messages[i]
+      },(err) => {
+        if(err)
+        {
+          let errmsg = `sendPost ${postId} to ${userId} error in forward message_id ${post.messages[i]}\n${err}`;
+          console.log(errmsg);
+          notifyAdmins(errmsg);
+        }
       });
     }, i*config.waitForPosts, i);
   }
@@ -523,6 +530,13 @@ broadcastMessage = (userId) => {
                 chat_id: uid,
                 from_chat_id: userId,
                 message_id: msgs[i]
+              },(err) => {
+                if(err)
+                {
+                  let errmsg = `send2all to ${uid} error in forward message_id ${msgs[i]}\n${err}`;
+                  console.log(errmsg);
+                  notifyAdmins(errmsg);
+                }
               });
             }, i*config.waitForPosts, i);
           }
