@@ -544,16 +544,21 @@ broadcastMessage = (userId) => {
 
 uploadAudio = (userId, path) => {
   console.log(`uploadAudio for user ${userId}: ${path}`);
-  bot.sendChatAction({
-    chat_id: userId,
-    action: 'upload_audio'
-  });
+  
+  let notifyIv = setInterval(() => {
+    bot.sendChatAction({
+      chat_id: userId,
+      action: 'upload_audio'
+    }, 5000);
+  }
+
   bot.sendAudio({
     chat_id: userId,
     audio: path.trim()
   }, (err, data) => {
     let debug = JSON.stringify({err: err, data: data}, null, 2);
     console.log(`audioSent\n${debug}`);
+    clearInterval(notifyIv);
     sendMessage(userId, debug);
   });
 }
