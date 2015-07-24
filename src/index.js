@@ -438,7 +438,8 @@ sendPost = (userId, postId) => {
       let sendErr = (err) => {
         if(err)
         {
-          let errmsg = `sendPost ${postId} to ${userId} error in forward message_id ${post.messages[i]}\n${err}`;
+          let debug = JSON.stringify({err: err, data: data}, null, 2);
+          let errmsg = `sendPost ${postId} to ${userId} error in forward message_id ${post.messages[i]}\n${debug}`;
           console.log(errmsg);
           notifyAdmins(errmsg);
         }
@@ -556,7 +557,8 @@ broadcastMessage = (userId) => {
               let sendErr = (err) => {
                 if(err)
                 {
-                  let errmsg = `send2all to ${uid} error in forward message_id ${msgs[i]}\n${err}`;
+                  let debug = JSON.stringify({err: err, data: data}, null, 2);
+                  let errmsg = `send2all to ${uid} error in forward message_id ${msgs[i]}\n${debug}`;
                   console.log(errmsg);
                   notifyAdmins(errmsg);
                 }
