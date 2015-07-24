@@ -13,7 +13,7 @@ config = {
   token: process.env.BOT_TOKEN,
   saveInterval: 10000, // ms
   updateInterval: 3000, //ms
-  waitForPosts: 1000, //ms
+  waitForPosts: 1500, //ms
   admins: [58389411]
 },
 
