@@ -189,7 +189,7 @@ onMessage = (msg) => {
     // }
   }
 
-  //Left Join
+  //Chat Left
   if(msg.left_chat_participant && msg.left_chat_participant.id === config.bot.id)
   {
     console.log(`chatLeft: ${msg.chat.title}`);
@@ -206,7 +206,8 @@ onMessage = (msg) => {
   }
 
   // Send post
-  let postId = parseInt(fixNumbers((msg.text || '').trim()), 10);
+  let text = fixNumbers((msg.text || '').trim());
+  let postId = parseInt(text.replace('/',''), 10);
   if(postId > -1)
   {
     sendPost(msg.chat.id, postId);
