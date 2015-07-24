@@ -435,10 +435,10 @@ sendPost = (userId, postId) => {
   for(let i=0, msglen = post.messages.length; i < msglen; i++)
   {
     setTimeout((i) => {
-      let sendErr = (err) => {
+      let sendErr = (err, dt) => {
         if(err)
         {
-          let debug = JSON.stringify({err: err, data: data}, null, 2);
+          let debug = JSON.stringify({err: err, data: dt}, null, 2);
           let errmsg = `sendPost ${postId} to ${userId} error in forward message_id ${post.messages[i]}\n${debug}`;
           console.log(errmsg);
           notifyAdmins(errmsg);
@@ -554,10 +554,10 @@ broadcastMessage = (userId) => {
           for(let i=0, msglen = msgs.length; i < msglen; i++)
           {
             setTimeout((i) => {
-              let sendErr = (err) => {
+              let sendErr = (err, dt) => {
                 if(err)
                 {
-                  let debug = JSON.stringify({err: err, data: data}, null, 2);
+                  let debug = JSON.stringify({err: err, data: dt}, null, 2);
                   let errmsg = `send2all to ${uid} error in forward message_id ${msgs[i]}\n${debug}`;
                   console.log(errmsg);
                   notifyAdmins(errmsg);
