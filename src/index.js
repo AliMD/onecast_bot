@@ -402,7 +402,7 @@ recordNewPost = (userId) => {
       return;
     }
 
-    msgs.push(msg.message_id);
+    msgs.push(msg.text && msg.text.length > 0 ? msg.text : msg.message_id);
   }
 },
 
@@ -430,21 +430,35 @@ sendPost = (userId, postId) => {
     return;
   }
 
+
+
   for(let i=0, msglen = post.messages.length; i < msglen; i++)
   {
     setTimeout((i) => {
-      bot.forwardMessage({
-        chat_id: userId,
-        from_chat_id: post.from,
-        message_id: post.messages[i]
-      },(err) => {
+      let sendErr = (err) => {
         if(err)
         {
           let errmsg = `sendPost ${postId} to ${userId} error in forward message_id ${post.messages[i]}\n${err}`;
           console.log(errmsg);
           notifyAdmins(errmsg);
         }
-      });
+      };
+
+      if(typeof post.messages[i] === 'string')
+      {
+        bot.sendMessage({
+          chat_id: userId,
+          text: post.messages[i]
+        }, sendErr)
+      }
+      else
+      {
+        bot.forwardMessage({
+          chat_id: userId,
+          from_chat_id: post.from,
+          message_id: post.messages[i]
+        }, sendErr);
+      }
     }, i*config.waitForPosts, i);
   }
 
