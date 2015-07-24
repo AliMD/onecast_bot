@@ -519,11 +519,21 @@ broadcastMessage = (userId) => {
       for(let i=0, msglen = msgs.length; i < msglen; i++)
       {
         setTimeout((i) => {
-          bot.forwardMessage({
-            chat_id: userId,
-            from_chat_id: userId,
-            message_id: msgs[i]
-          });
+          if(typeof msgs[i] === 'string')
+          {
+            bot.sendMessage({
+              chat_id: userId,
+              text: msgs[i]
+            })
+          }
+          else
+          {
+            bot.forwardMessage({
+              chat_id: userId,
+              from_chat_id: userId,
+              message_id: msgs[i]
+            });
+          }
         }, i*config.waitForPosts, i);
       }
       setTimeout(() => {
@@ -543,18 +553,30 @@ broadcastMessage = (userId) => {
           for(let i=0, msglen = msgs.length; i < msglen; i++)
           {
             setTimeout((i) => {
-              bot.forwardMessage({
-                chat_id: uid,
-                from_chat_id: userId,
-                message_id: msgs[i]
-              },(err) => {
+              let sendErr = (err) => {
                 if(err)
                 {
                   let errmsg = `send2all to ${uid} error in forward message_id ${msgs[i]}\n${err}`;
                   console.log(errmsg);
                   notifyAdmins(errmsg);
                 }
-              });
+              };
+
+              if(typeof msgs[i] === 'string')
+              {
+                bot.sendMessage({
+                  chat_id: uid,
+                  text: msgs[i]
+                }, sendErr)
+              }
+              else
+              {
+                bot.forwardMessage({
+                  chat_id: uid,
+                  from_chat_id: userId,
+                  message_id: msgs[i]
+                }, sendErr);
+              }
             }, i*config.waitForPosts, i);
           }
         }, i*config.waitForPosts*2);
@@ -569,7 +591,7 @@ broadcastMessage = (userId) => {
 
     if(!end)
     {
-      msgs.push(msg.message_id);
+      msgs.push(msg.text && msg.text.length > 0 ? msg.text : msg.message_id);
     }
   }
 },
