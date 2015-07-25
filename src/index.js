@@ -206,8 +206,8 @@ onMessage = (msg) => {
   }
 
   // Send post
-  let text = fixNumbers((msg.text || '').trim());
-  let postId = parseInt(text.replace('/',''), 10);
+  let text = fixNumbers((msg.text || ''));
+  let postId = parseInt(text.replace('/','').trim(), 10);
   if(postId > -1)
   {
     sendPost(msg.chat.id, postId);
@@ -233,6 +233,12 @@ onMessage = (msg) => {
   if(fromAdmin && (msg.text || '').trim().indexOf('/uploadaudio ') === 0)
   {
     uploadAudio(msg.chat.id, msg.text.replace('/uploadaudio ', '').trim());
+  }
+
+  // status
+  if(fromAdmin && (msg.text || '').trim().indexOf('/status ') === 0)
+  {
+    sendStatus(msg.chat.id);
   }
 
   //Notify other messages to admin
@@ -622,6 +628,21 @@ uploadAudio = (userId, path) => {
     sendMessage(userId, debug);
   });
   notifyfn();
+},
+
+sendStatus = (userId) => {
+  let
+  status = 'postStatus: ',
+  postStatus = {}
+  ;
+  for(let i=0; len = data.posts.lenhth; i<len; i++)
+  {
+    postStatus[`Cast_${i}`] = data.posts[i].sent_count;
+  }
+
+  status += JSON.stringify(postStatus, null, 2);
+
+  sendMessage(userId, status)
 }
 
 ;
