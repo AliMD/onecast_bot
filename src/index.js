@@ -579,7 +579,7 @@ broadcastMessage = (userId) => {
                   message_id: msgs[i]
                 }, sendErr);
               }
-            }, i*config.waitForPosts, i);
+            }, i*config.waitForPosts, i); //TODO: use another var time calc, i skipped for unsubscribed users
           }
         }, i*config.waitForPosts*2);
       });
