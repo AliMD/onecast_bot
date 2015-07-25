@@ -233,12 +233,14 @@ onMessage = (msg) => {
   if(fromAdmin && (msg.text || '').trim().indexOf('/uploadaudio ') === 0)
   {
     uploadAudio(msg.chat.id, msg.text.replace('/uploadaudio ', '').trim());
+    return;
   }
 
   // status
-  if(fromAdmin && (msg.text || '').trim().indexOf('/status ') === 0)
+  if(fromAdmin && (msg.text || '').trim().indexOf('/status') === 0)
   {
     sendStatus(msg.chat.id);
+    return;
   }
 
   //Notify other messages to admin
@@ -631,18 +633,19 @@ uploadAudio = (userId, path) => {
 },
 
 sendStatus = (userId) => {
+  console.log(`sendStatus to ${userId}`);
   let
   status = 'postStatus: ',
   postStatus = {}
   ;
-  for(let i=0; len = data.posts.lenhth; i<len; i++)
+  for(let i=0, len = data.posts.length; i<len; i++)
   {
-    postStatus[`Cast_${i}`] = data.posts[i].sent_count;
+    postStatus[`Cast_${i}`] = data.posts[i] ? data.posts[i].sent_count : 'Err!';
   }
 
   status += JSON.stringify(postStatus, null, 2);
 
-  sendMessage(userId, status)
+  sendMessage(userId, status);
 }
 
 ;
