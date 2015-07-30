@@ -170,7 +170,7 @@ onMessage = (msg) => {
 
 
   //Chat Join
-  if(msg.new_chat_participant && msg.new_chat_participant.id === config.bot.id || )
+  if(msg.new_chat_participant && msg.new_chat_participant.id === config.bot.id)
   {
     console.log(`chatJoin: ${msg.chat.title}`);
     subscribe(msg.chat, msg.from);
