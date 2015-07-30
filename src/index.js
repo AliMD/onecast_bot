@@ -64,6 +64,7 @@ getBotInfo = () => {
     {
       console.log('error!');
       console.log(err);
+      getBotInfo();
     }
   });
 },
@@ -169,7 +170,7 @@ onMessage = (msg) => {
 
 
   //Chat Join
-  if(msg.new_chat_participant && msg.new_chat_participant.id === config.bot.id)
+  if(msg.new_chat_participant && msg.new_chat_participant.id === config.bot.id || )
   {
     console.log(`chatJoin: ${msg.chat.title}`);
     subscribe(msg.chat, msg.from);
@@ -245,7 +246,8 @@ onMessage = (msg) => {
 
   //Notify other messages to admin
   // msg.data = msgDate.toLocaleString();
-  if(!fromAdmin){
+  if(!fromAdmin && !msg.new_chat_title && !msg.new_chat_participant && !msg.left_chat_participant && !msg.new_chat_photo && !msg.delete_chat_photo)
+  {
     notifyAdmins(msg);
   }
 },
@@ -634,18 +636,35 @@ uploadAudio = (userId, path) => {
 
 sendStatus = (userId) => {
   console.log(`sendStatus to ${userId}`);
-  let
-  status = 'postStatus: ',
-  postStatus = {}
-  ;
-  for(let i=0, len = data.posts.length; i<len; i++)
+  let status = {
+    help: data.posts[0] ? data.posts[0].sent_count : 'Err!',
+    posts: {},
+    postSum: 0,
+    users: 0,
+    groups: 0
+  };
+
+  for(let i=1, len = data.posts.length; i<len; i++)
   {
-    postStatus[`Cast_${i}`] = data.posts[i] ? data.posts[i].sent_count : 'Err!';
+    if(!data.posts[i]) continue;
+    status.posts[`Cast_${i}`] = data.posts[i].sent_count;
+    status.postSum += status.posts[`Cast_${i}`];
   }
 
-  status += JSON.stringify(postStatus, null, 2);
+  let users = Object.keys(data.users);
+  users.forEach( (userId, i) => {
+    if(data.users[userId].unsubscribed) return true;
+    if(userId>0)
+    {
+      status.users++;
+    }
+    else
+    {
+      status.groups++;
+    }
+  });
 
-  sendMessage(userId, status);
+  sendMessage(userId, JSON.stringify(status, null, 2));
 }
 
 ;
