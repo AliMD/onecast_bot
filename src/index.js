@@ -71,10 +71,11 @@ getBotInfo = () => {
 
 REGEXPS = {
   subscribe: /start|subscribe|عضویت/i,
-  unsubscribe: /stop|unsubscribe|خروخ/i,
-  hello: /hi|hello|welcome|سلام|درورد|خوش.*مدی/i,
+  unsubscribe: /stop|unsubscribe|خروج|لغو\s*عضویت/i,
+  hello: /hi|hello|welcome|سلام|درود|خوش\s*[اآ]مدی/i,
   help: /help|راهنما/i
 },
+//TODO: fix msg text length
 
 zmba_iv = 0,
 
