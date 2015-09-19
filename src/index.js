@@ -14,7 +14,7 @@ config = {
   saveInterval: 10000, // ms
   updateInterval: 1000, //ms
   waitForPosts: 1500, //ms
-  admins: [58389411]
+  admins: [58389411] // TODO: load from external config
 },
 
 data = {
@@ -64,7 +64,7 @@ getBotInfo = () => {
     {
       console.log('error!');
       console.log(err);
-      getBotInfo();
+      setTimeout(getBotInfo, 1000);
     }
   });
 },
