@@ -73,7 +73,8 @@ REGEXPS = {
   subscribe: /start|subscribe|عضویت/i,
   unsubscribe: /stop|unsubscribe|خروج|لغو\s*عضویت/i,
   hello: /hi|hello|welcome|سلام|درود|خوش\s*[اآ]مدی/i,
-  help: /help|راهنما/i
+  help: /help|راهنما/i,
+  about: /about|درباره/i
 },
 //TODO: fix msg text length
 
@@ -146,6 +147,13 @@ onMessage = (msg) => {
   if (REGEXPS.help.test(msg.text))
   {
     sendPost(msg.chat.id, 0); // post 0 always is help
+    return;
+  }
+
+  // about
+  if (REGEXPS.about.test(msg.text))
+  {
+    sendMessage(msg.chat.id, l10n('about').replace('%name%', msg.from.first_name));
     return;
   }
 
