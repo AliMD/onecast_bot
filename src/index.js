@@ -129,18 +129,18 @@ onMessage = (msg) => {
   }
 
   //Debug and test
-  if (msg.text === 'dalli')
-  {
-    zmba_iv = setInterval(() => {
-      sendMessage(msg.chat.id, 'Dalli !');
-    }, 2500);
-    return;
-  }
-  if (zmba_iv && msg.text === 'stop')
-  {
-    clearInterval(zmba_iv);
-    zmba_iv = 0;
-  }
+  // if (msg.text === 'dalli')
+  // {
+  //   zmba_iv = setInterval(() => {
+  //     sendMessage(msg.chat.id, 'Dalli !');
+  //   }, 2500);
+  //   return;
+  // }
+  // if (zmba_iv && msg.text === 'cancel')
+  // {
+  //   clearInterval(zmba_iv);
+  //   zmba_iv = 0;
+  // }
 
   // help
   if (REGEXPS.help.test(msg.text))
