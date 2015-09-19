@@ -11,9 +11,9 @@ var
 config = {
   bot: {},
   token: process.env.BOT_TOKEN,
-  saveInterval: 10000, // ms
+  saveInterval: 5000, // ms
   updateInterval: 1000, //ms
-  waitForPosts: 1500, //ms
+  waitForPosts: 1000, //ms
   admins: [58389411] // TODO: load from external config
 },
 
