@@ -14,7 +14,8 @@ config = {
   saveInterval: 5000, // ms
   updateInterval: 1000, //ms
   waitForPosts: 1000, //ms
-  admins: [58389411] // TODO: load from external config
+  admins: [58389411], // TODO: load from external config
+  debugMsgs: true
 },
 
 data = {
@@ -110,6 +111,11 @@ onMessage = (msg) => {
   fromAdmin = isAdmin(msg.chat.id)
   ;
   console.log(msgDate.toLocaleString());
+
+  if(fromAdmin && config.debugMsgs)
+  {
+    notifyAdmins(JSON.stringify(msg, null, 2));
+  }
 
   //remove bot username
   if(msg.text)
@@ -385,6 +391,7 @@ recordNewPost = (userId) => {
 
   let postId = -1, msgs = [];
   sendMessage(userId, 'Recording...\nYou can /cancel or /end the process any time.\n\nPlease enter post id.');
+
   requestMessage[userId] = (msg) => {
     if(msg.text === '/cancel')
     {
