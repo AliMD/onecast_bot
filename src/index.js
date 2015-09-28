@@ -73,7 +73,7 @@ getBotInfo = () => {
 REGEXPS = {
   subscribe: /start|subscribe|عضویت/i,
   unsubscribe: /stop|unsubscribe|خروج|لغو\s*عضویت/i,
-  hello: /hi|hello|welcome|سلام|درود|خوش\s*[اآ]مدی/i,
+  hello: /hi|hello|welcome|salam|سلام|درود|خوش\s*[اآ]مدی/i,
   help: /help|راهنما/i,
   about: /about|درباره/i
 },
@@ -104,7 +104,7 @@ onMessage = (msg) => {
   }
   */
 
-  console.log(`**** ${msg.from.username}: ${msg.text}`);
+  console.log(`===> ${msg.from.username}: ${msg.text}`);
 
   let
   msgDate = new Date(msg.date*1000),
@@ -114,7 +114,7 @@ onMessage = (msg) => {
 
   if(fromAdmin && config.debugMsgs)
   {
-    notifyAdmins(JSON.stringify(msg, null, 2));
+    notifyAdmins('Debug: ' + JSON.stringify(msg, null, 2));
   }
 
   //remove bot username
