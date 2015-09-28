@@ -94,7 +94,11 @@ onMessage = (msg) => {
 
   if(fromAdmin && config.debugMsgs)
   {
-    notifyAdmins('Debug: ' + JSON.stringify(msg, null, 2));
+    let buildMessage = makeMessageObj(msg);
+    notifyAdmins('Debug: ' + JSON.stringify({sourceMessage: msg, buildMessage: buildMessage}, null, 2));
+    notifyAdmins(buildMessage);
+    notifyAdmins(buildMessage.id);
+    return;
   }
 
   //remove bot username
@@ -243,7 +247,8 @@ onMessage = (msg) => {
   // msg.data = msgDate.toLocaleString();
   if(!fromAdmin && !msg.new_chat_title && !msg.new_chat_participant && !msg.left_chat_participant && !msg.new_chat_photo && !msg.delete_chat_photo)
   {
-    notifyAdmins(msg);
+    notifyAdmins('unknownMessage: ' + JSON.stringify(msg, null, 2));
+    notifyAdmins(msg.id);
   }
 },
 
@@ -402,23 +407,39 @@ sentUnfinishedMessage = () => {
   // TODO: sent unfinished message from a waiting list
 },
 
-notifyAdmins = (msg) => {
+notifyAdmins = (msg, fromId) => {
   console.log(`notifyAdmins: ${msg}`);
   config.admins.forEach((admin)=>{
-    if(typeof msg === 'object' && msg.message_id)
+    // if(typeof msg === 'object' && msg.message_id)
+    // {
+    //   bot.forwardMessage({
+    //     chat_id: admin,
+    //     from_chat_id: msg.from.id,
+    //     message_id: msg.message_id
+    //   });
+    //   let obj = {id:msg.message_id, from: msg.from};
+    //   if(msg.from.id !== msg.chat.id) obj.chat = msg.chat;
+    //   sendText(admin, JSON.stringify(obj, null, 2));
+    //   return true;
+    // }
+    if(typeof msg === 'object')
     {
+      sendMessage(admin, msg);
+    }
+    else if (typeof msg === 'string') {
+      sendText(admin, msg);
+    }
+    else if (!isNaN(msg)) {
+      // msg in a message id
       bot.forwardMessage({
         chat_id: admin,
-        from_chat_id: msg.from.id,
-        message_id: msg.message_id
+        from_chat_id: fromId,
+        message_id: msg
       });
-      let obj = {id:msg.message_id, from: msg.from};
-      if(msg.from.id !== msg.chat.id) obj.chat = msg.chat;
-      sendText(admin, JSON.stringify(obj, null, 2));
-      return true;
     }
-
-    sendText(admin, msg);
+    else {
+      console.log('notifyAdmins msg type err!');
+    }
   });
 },
 
