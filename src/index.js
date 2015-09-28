@@ -368,6 +368,15 @@ sendMessage = (id, message, fb) => {
     }, callBack);
   }
 
+  else if (message.voice) {
+    console.log('bot.sendVoice');
+    // TODO: fix sendVoice
+    bot.sendAudio({
+      chat_id: id,
+      audio: message.voice.id
+    }, callBack);
+  }
+
   else if (message.sticker) {
     console.log('bot.sendSticker');
     bot.sendSticker({
@@ -525,6 +534,16 @@ makeMessageObj = (sourceMessage) => {
     }
   }
 
+  else if (sourceMessage.voice)
+  {
+    message.voice = {
+      id: sourceMessage.voice.file_id,
+      type: sourceMessage.voice.mime_type,
+      size: sourceMessage.voice.file_size,
+      duration: sourceMessage.voice.duration
+    }
+  }
+
   else if (sourceMessage.sticker) {
     message.sticker = {
       id: sourceMessage.sticker.file_id,
@@ -558,7 +577,7 @@ makeMessageObj = (sourceMessage) => {
     }
   }
 
-  //TODO: video, voice, location
+  //TODO: video, location
 
   return message;
 },
