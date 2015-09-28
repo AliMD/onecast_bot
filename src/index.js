@@ -97,7 +97,7 @@ onMessage = (msg) => {
     let buildMessage = makeMessageObj(msg);
     notifyAdmins('Debug: ' + JSON.stringify({sourceMessage: msg, buildMessage: buildMessage}, null, 2));
     notifyAdmins(buildMessage);
-    notifyAdmins(buildMessage.id);
+    notifyAdmins(buildMessage.id, buildMessage.from);
     return;
   }
 
@@ -408,7 +408,7 @@ sentUnfinishedMessage = () => {
 },
 
 notifyAdmins = (msg, fromId) => {
-  console.log(`notifyAdmins: ${msg}`);
+  console.log(`notifyAdmins`);
   config.admins.forEach((admin)=>{
     // if(typeof msg === 'object' && msg.message_id)
     // {
@@ -424,13 +424,16 @@ notifyAdmins = (msg, fromId) => {
     // }
     if(typeof msg === 'object')
     {
+      console.log(`notifyAdmins: sendMessage`);
       sendMessage(admin, msg);
     }
     else if (typeof msg === 'string') {
+      console.log(`notifyAdmins: sendText`);
       sendText(admin, msg);
     }
     else if (!isNaN(msg)) {
       // msg in a message id
+      console.log(`notifyAdmins: forwardMessage`);
       bot.forwardMessage({
         chat_id: admin,
         from_chat_id: fromId,
