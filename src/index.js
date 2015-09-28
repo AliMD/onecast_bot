@@ -119,7 +119,7 @@ onMessage = (msg) => {
   // if (msg.text === 'dalli')
   // {
   //   zmba_iv = setInterval(() => {
-  //     sendMessage(msg.chat.id, 'Dalli !');
+  //     sendText(msg.chat.id, 'Dalli !');
   //   }, 2500);
   //   return;
   // }
@@ -139,7 +139,7 @@ onMessage = (msg) => {
   // about
   if (REGEXPS.about.test(msg.text))
   {
-    sendMessage(msg.chat.id, l10n('about').replace('%name%', msg.from.first_name));
+    sendText(msg.chat.id, l10n('about').replace('%name%', msg.from.first_name));
     return;
   }
 
@@ -147,7 +147,7 @@ onMessage = (msg) => {
   //Hello
   if (REGEXPS.hello.test(msg.text))
   {
-    sendMessage(msg.chat.id, l10n('hello').replace('%name%', msg.from.first_name));
+    sendText(msg.chat.id, l10n('hello').replace('%name%', msg.from.first_name));
     return;
   }
 
@@ -256,14 +256,14 @@ subscribe = (user, from) => {
   {
     usr.title = user.title;
 
-    sendMessage(user.id, l10n('group_subscribed').replace('%name%', from.first_name));
-    if(from && from.id) sendMessage(from.id, l10n('thanks_for_add_to_group').replace('%name%', from.first_name).replace('%title%', user.title));
+    sendText(user.id, l10n('group_subscribed').replace('%name%', from.first_name));
+    if(from && from.id) sendText(from.id, l10n('thanks_for_add_to_group').replace('%name%', from.first_name).replace('%title%', user.title));
   }
   else
   {
     if (checkSubscribed(user.id))
     {
-      sendMessage(user.id, l10n('already_subscribed'));
+      sendText(user.id, l10n('already_subscribed'));
       return;
     }
 
@@ -271,7 +271,7 @@ subscribe = (user, from) => {
     usr.last_name = user.last_name;
     if (user.username) usr.username = user.username;
 
-    sendMessage(user.id, l10n('user_subscribed').replace('%name%', user.first_name));
+    sendText(user.id, l10n('user_subscribed').replace('%name%', user.first_name));
   }
 
   data.users[user.id] = usr;
@@ -285,11 +285,11 @@ unsubscribe = (user, from, silent = false) => {
 
   if(!checkSubscribed(user.id))
   {
-    if(!silent) sendMessage(user.id, l10n('not_subscribed').replace('%name%', user.first_name));
+    if(!silent) sendText(user.id, l10n('not_subscribed').replace('%name%', user.first_name));
     return;
   }
   data.users[user.id].unsubscribed = true;
-  if(!silent) sendMessage(user.id, l10n('unsubscribed').replace('%name%', user.first_name));
+  if(!silent) sendText(user.id, l10n('unsubscribed').replace('%name%', user.first_name));
   saveContents();
   //TODO: send some quite message
   notifyAdmins(`user unsubscribe: ${JSON.stringify({user: user, from: from}, null, 2)}`);
@@ -311,11 +311,11 @@ saveContents = (force) => {
   }
 },
 
-sendMessage = (id, text, fb) => {
+sendText = (id, text, fb) => {
   let username = data.users[id] ?
                   data.users[id].username ? `@${data.users[id].username}` : `${data.users[id].title}`
                   : `#${id}`;
-  console.log(`sendMessage (${username}): ${text}`);
+  console.log(`sendMText(${username}): ${text}`);
   bot.sendMessage({
     chat_id: id,
     text: text,
@@ -350,11 +350,11 @@ notifyAdmins = (msg) => {
       });
       let obj = {id:msg.message_id, from: msg.from};
       if(msg.from.id !== msg.chat.id) obj.chat = msg.chat;
-      sendMessage(admin, JSON.stringify(obj, null, 2));
+      sendText(admin, JSON.stringify(obj, null, 2));
       return true;
     }
 
-    sendMessage(admin, msg);
+    sendText(admin, msg);
   });
 },
 
@@ -366,18 +366,18 @@ recordNewPost = (userId) => {
   console.log(`recordNewPost: ${userId}`);
   if(requestMessage[userId])
   {
-    sendMessage(userId, 'Please /cancel last action.');
+    sendText(userId, 'Please /cancel last action.');
     return;
   }
 
   let postId = -1, msgs = [];
-  sendMessage(userId, 'Recording...\nYou can /cancel or /end the process any time.\n\nPlease enter post id.');
+  sendText(userId, 'Recording...\nYou can /cancel or /end the process any time.\n\nPlease enter post id.');
 
   requestMessage[userId] = (msg) => {
     if(msg.text === '/cancel')
     {
       delete requestMessage[userId];
-      sendMessage(userId, `Ok, recording cancel!\n${msgs.length} has been lost.`);
+      sendText(userId, `Ok, recording cancel!\n${msgs.length} has been lost.`);
       return;
     }
 
@@ -387,11 +387,11 @@ recordNewPost = (userId) => {
       if(id > -1)
       {
         postId = id;
-        sendMessage(userId, `Ok, please enter your messages in any type ;)`);
+        sendText(userId, `Ok, please enter your messages in any type ;)`);
       }
       else
       {
-        sendMessage(userId, `Please enter a positive number.`);
+        sendText(userId, `Please enter a positive number.`);
       }
       return;
     }
@@ -405,7 +405,7 @@ recordNewPost = (userId) => {
         sent_count: 0
       };
       saveContents();
-      sendMessage(userId, `Ok, recording end\n${msgs.length} messages recorded for post_id:${postId}`);
+      sendText(userId, `Ok, recording end\n${msgs.length} messages recorded for post_id:${postId}`);
       return;
     }
 
@@ -495,7 +495,7 @@ sendPost = (userId, postId) => {
 
   if(!post)
   {
-    sendMessage(userId, l10n('post404').replace('%max_post_id%', data.posts.length-1))
+    sendText(userId, l10n('post404').replace('%max_post_id%', data.posts.length-1))
     return;
   }
 
@@ -563,23 +563,23 @@ broadcastMessage = (userId) => {
   console.log(`broadcastMessage: ${userId}`);
   if(requestMessage[userId])
   {
-    sendMessage(userId, 'Please /cancel last action.');
+    sendText(userId, 'Please /cancel last action.');
     return;
   }
 
   let end = false, msgs = [];
-  sendMessage(userId, 'Recording...\nYou can /cancel or /end the process any time.');
+  sendText(userId, 'Recording...\nYou can /cancel or /end the process any time.');
   requestMessage[userId] = (msg) => {
     if(msg.text === '/cancel')
     {
       delete requestMessage[userId];
-      sendMessage(userId, `Ok, recording cancel!\n${msgs.length} has been lost.`);
+      sendText(userId, `Ok, recording cancel!\n${msgs.length} has been lost.`);
       return;
     }
 
     if(msg.text === '/end')
     {
-      sendMessage(userId, `Ok, recording end\n${msgs.length} messages recorded\n\nNext ?\n/cancel\n/preview\n/send2all`);
+      sendText(userId, `Ok, recording end\n${msgs.length} messages recorded\n\nNext ?\n/cancel\n/preview\n/send2all`);
       end = true;
       return;
     }
@@ -607,7 +607,7 @@ broadcastMessage = (userId) => {
         }, i*config.waitForPosts, i);
       }
       setTimeout(() => {
-        sendMessage(userId, `Next ?\n/cancel\n/preview\n/send2all`);
+        sendText(userId, `Next ?\n/cancel\n/preview\n/send2all`);
       }, msgs.length*config.waitForPosts);
       return;
     }
@@ -688,7 +688,7 @@ uploadAudio = (userId, path) => {
     let debug = JSON.stringify({err: err, data: data}, null, 2);
     console.log(`audioSent\n${debug}`);
     clearInterval(notifyIv);
-    sendMessage(userId, debug);
+    sendText(userId, debug);
   });
   notifyfn();
 },
@@ -723,7 +723,7 @@ sendStatus = (userId) => {
     }
   });
 
-  sendMessage(userId, JSON.stringify(status, null, 2));
+  sendText(userId, JSON.stringify(status, null, 2));
 }
 
 ;
