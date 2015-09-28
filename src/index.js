@@ -15,7 +15,7 @@ config = {
   updateInterval: 1000, //ms
   waitForPosts: 1000, //ms
   admins: [58389411], // TODO: load from external config
-  debugMsgs: true
+  debugMsgs: false
 },
 
 data = {
@@ -98,8 +98,8 @@ onMessage = (msg) => {
     notifyAdmins('Debug: ' + JSON.stringify({sourceMessage: msg, buildMessage: buildMessage}, null, 2));
     notifyAdmins(buildMessage);
     // notifyAdmins(buildMessage.id, buildMessage.from);
-    return;
   }
+
 
   //remove bot username
   if(msg.text)
@@ -240,6 +240,14 @@ onMessage = (msg) => {
   if(fromAdmin && (msg.text || '').trim().indexOf('/status') === 0)
   {
     sendStatus(msg.chat.id);
+    return;
+  }
+
+  // swap debug mode
+  if(fromAdmin && (msg.text || '').trim().indexOf('/debug') === 0)
+  {
+    config.debugMsgs = !config.debugMsgs;
+    sendMessage(msg.chat.id, {text: 'Debug Turn ' + (config.debugMsgs ? 'On' : 'Off')});
     return;
   }
 
@@ -835,7 +843,6 @@ sendStatus = (userId) => {
 
   sendText(userId, JSON.stringify(status, null, 2));
 }
-
 ;
 
 init();
