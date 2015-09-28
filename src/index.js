@@ -428,68 +428,71 @@ recordNewPost = (userId) => {
       return;
     }
 
-    // build message object for store in posts.json
-
-    let message = {
-      id: msg.message_id,
-      from: msg.from.id,
-      chat: msg.chat.id,
-      date: msg.date
-    }
-
-    if (msg.text) {
-      message.text = msg.text
-    }
-
-    else if (msg.audio)
-    {
-      message.audio = {
-        id: msg.audio.file_id,
-        type: msg.audio.mime_type,
-        size: msg.audio.file_size
-        duration: msg.audio.duration,
-        // TODO: get performer and title from user
-      }
-    }
-
-    else if (msg.sticker) {
-      message.sticker = {
-        id: msg.sticker.file_id,
-        size: msg.sticker.file_size
-        // TODO: get caption
-      }
-    }
-
-    else if (msg.photo && msg.photo.length) {
-      let photo = msg.photo.pop(); // get largest size of the photo
-      message.photo = {
-        id: msg.photo.file_id,
-        size: msg.photo.file_size,
-        width: msg.photo.width,
-        height: msg.photo.height
-        // TODO: get caption
-      }
-    }
-
-    else if (msg.contact) {
-      message.contact = msg.contact;
-      // get phone_number, first_name, last_name, user_id from user
-    }
-
-    else if (msg.document) {
-      message.document = {
-        id: msg.document.file_id,
-        type: msg.document.mime_type,
-        size: msg.document.file_size
-        // TODO: get caption
-      }
-    }
-
-    //TODO: video, voice, location
-
-    msgs.push(message);
+    msgs.push(makeMessageObj(msg));
   }
 },
+
+// build message object for store in posts.json
+makeMessageObj = (sourceMessage) => {
+  let message = {
+    id: sourceMessage.message_id,
+    from: sourceMessage.from.id,
+    chat: sourceMessage.chat.id,
+    date: sourceMessage.date
+  }
+
+  if (sourceMessage.text) {
+    message.text = sourceMessage.text
+  }
+
+  else if (sourceMessage.audio)
+  {
+    message.audio = {
+      id: sourceMessage.audio.file_id,
+      type: sourceMessage.audio.mime_type,
+      size: sourceMessage.audio.file_size
+      duration: sourceMessage.audio.duration,
+      // TODO: get performer and title from user
+    }
+  }
+
+  else if (sourceMessage.sticker) {
+    message.sticker = {
+      id: sourceMessage.sticker.file_id,
+      size: sourceMessage.sticker.file_size
+      // TODO: get caption
+    }
+  }
+
+  else if (sourceMessage.photo && sourceMessage.photo.length) {
+    let photo = sourceMessage.photo.pop(); // get largest size of the photo
+    message.photo = {
+      id: sourceMessage.photo.file_id,
+      size: sourceMessage.photo.file_size,
+      width: sourceMessage.photo.width,
+      height: sourceMessage.photo.height
+      // TODO: get caption
+    }
+  }
+
+  else if (sourceMessage.contact) {
+    message.contact = sourceMessage.contact;
+    // get phone_number, first_name, last_name, user_id from user
+  }
+
+  else if (sourceMessage.document) {
+    message.document = {
+      id: sourceMessage.document.file_id,
+      type: sourceMessage.document.mime_type,
+      size: sourceMessage.document.file_size
+      // TODO: get caption
+    }
+  }
+
+  //TODO: video, voice, location
+
+  return message;
+}
 
 persianNumbers = [/۰/g, /۱/g, /۲/g, /۳/g, /۴/g, /۵/g, /۶/g, /۷/g, /۸/g, /۹/g],
 arabicNumbers  = [/٠/g, /١/g, /٢/g, /٣/g, /٤/g, /٥/g, /٦/g, /٧/g, /٨/g, /٩/g],
