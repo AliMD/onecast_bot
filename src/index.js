@@ -339,7 +339,7 @@ sendMessage = (id, message, fb) => {
   let username = data.users[id] ?
                   data.users[id].username ? `@${data.users[id].username}` : `${data.users[id].title}`
                   : `#${id}`;
-  console.log(`sendMessage(${username}): ${text}`);
+  console.log(`sendMessage(${username}): message.id`);
 
   let callBack = (err, data) => {
     if (!err) return fb ? fb(data) : null;
@@ -351,7 +351,7 @@ sendMessage = (id, message, fb) => {
   }
 
   if (message.text) {
-    console.log('bot.sendMessage');
+    console.log(`bot.sendMessage: ${message.text}`);
     bot.sendMessage({
       chat_id: id,
       text: message.text,
@@ -533,10 +533,10 @@ makeMessageObj = (sourceMessage) => {
   else if (sourceMessage.photo && sourceMessage.photo.length) {
     let photo = sourceMessage.photo.pop(); // get largest size of the photo
     message.photo = {
-      id: sourceMessage.photo.file_id,
-      size: sourceMessage.photo.file_size,
-      width: sourceMessage.photo.width,
-      height: sourceMessage.photo.height
+      id: photo.file_id,
+      size: photo.file_size,
+      width: photo.width,
+      height: photo.height
       // TODO: get caption
     }
   }
