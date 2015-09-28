@@ -323,11 +323,75 @@ sendText = (id, text, fb) => {
   }, (err, data) => {
     if (!err) return fb ? fb(data) : null;
     // else
-    console.log('Error!');
+    console.log('sendText error!');
     console.log(err);
     console.log(data);
     //TODO: add to a waiting list
   });
+},
+
+sendMessage = (id, message, fb) => {
+  let username = data.users[id] ?
+                  data.users[id].username ? `@${data.users[id].username}` : `${data.users[id].title}`
+                  : `#${id}`;
+  console.log(`sendMessage(${username}): ${text}`);
+
+  let callBack = (err, data) => {
+    if (!err) return fb ? fb(data) : null;
+    // else
+    console.log('sendMessage error!');
+    console.log(err);
+    console.log(data);
+    //TODO: add to a waiting list
+  }
+
+  if (message.text) {
+    console.log('bot.sendMessage');
+    bot.sendMessage({
+      chat_id: id,
+      text: message.text,
+      parse_mode: 'Markdown'
+    }, callBack);
+  }
+
+  else if (message.audio) {
+    console.log('bot.sendAudio');
+    bot.sendAudio({
+      chat_id: id,
+      audio: message.audio.id
+      // TODO: fix performer and title
+    }, callBack);
+  }
+
+  else if (message.sticker) {
+    console.log('bot.sendSticker');
+    bot.sendSticker({
+      chat_id: id,
+      sticker: message.sticker.id
+    }, callBack);
+  }
+
+  else if (message.photo) {
+    console.log('bot.sendPhoto');
+    bot.sendPhoto({
+      chat_id: id,
+      photo: message.photo.id
+      //TODO: fix caption
+    }, callBack);
+  }
+
+  else if (message.contact) {
+    console.log('bot.sendContact');
+    //TODO: fix sendContact
+  }
+
+  else if (message.document) {
+    onsole.log('bot.sendDocument');
+    bot.sendDocument({
+      chat_id: id,
+      document: message.document.id
+    }, callBack);
+  }
 },
 
 checkSubscribed = (id) => {
