@@ -318,7 +318,8 @@ sendMessage = (id, text, fb) => {
   console.log(`sendMessage (${username}): ${text}`);
   bot.sendMessage({
     chat_id: id,
-    text: text
+    text: text,
+    parse_mode: 'Markdown'
   }, (err, data) => {
     if (!err) return fb ? fb(data) : null;
     // else
@@ -430,8 +431,8 @@ makeMessageObj = (sourceMessage) => {
     message.audio = {
       id: sourceMessage.audio.file_id,
       type: sourceMessage.audio.mime_type,
-      size: sourceMessage.audio.file_size
-      duration: sourceMessage.audio.duration,
+      size: sourceMessage.audio.file_size,
+      duration: sourceMessage.audio.duration
       // TODO: get performer and title from user
     }
   }
@@ -472,7 +473,7 @@ makeMessageObj = (sourceMessage) => {
   //TODO: video, voice, location
 
   return message;
-}
+},
 
 persianNumbers = [/۰/g, /۱/g, /۲/g, /۳/g, /۴/g, /۵/g, /۶/g, /۷/g, /۸/g, /۹/g],
 arabicNumbers  = [/٠/g, /١/g, /٢/g, /٣/g, /٤/g, /٥/g, /٦/g, /٧/g, /٨/g, /٩/g],
