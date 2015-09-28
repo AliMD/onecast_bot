@@ -84,26 +84,6 @@ zmba_iv = 0,
 requestMessage = {},
 
 onMessage = (msg) => {
-  /* msg sample
-  {
-    message_id: 1,
-    from: {
-      id: 58389411,
-      first_name: 'Ali',
-      last_name: 'Mihandoost',
-      username: 'Al1MD'
-    },
-    chat: {
-      id: 58389411,
-      first_name: 'Ali',
-      last_name: 'Mihandoost',
-      username: 'Al1MD'
-    },
-    date: 1436704651,
-    text: 'F'
-  }
-  */
-
   console.log(`===> ${msg.from.username}: ${msg.text}`);
 
   let
@@ -331,8 +311,8 @@ saveContents = (force) => {
   }
 },
 
-sendMessage = (id, text, fb = ()=>{}) => {
-  let username = data.users[id] ? 
+sendMessage = (id, text, fb) => {
+  let username = data.users[id] ?
                   data.users[id].username ? `@${data.users[id].username}` : `${data.users[id].title}`
                   : `#${id}`;
   console.log(`sendMessage (${username}): ${text}`);
@@ -340,12 +320,12 @@ sendMessage = (id, text, fb = ()=>{}) => {
     chat_id: id,
     text: text
   }, (err, data) => {
-    if (!err) return fb();
+    if (!err) return fb ? fb(data) : null;
     // else
     console.log('Error!');
     console.log(err);
     console.log(data);
-    //TODO: add to awaiting list
+    //TODO: add to a waiting list
   });
 },
 
@@ -634,7 +614,7 @@ broadcastMessage = (userId) => {
     if(end && msg.text === '/send2all')
     {
       delete requestMessage[userId];
-      
+
       let users = Object.keys(data.users);
       users.forEach( (uid, i) => {
         if(data.users[uid].unsubscribed) return true;
@@ -689,7 +669,7 @@ broadcastMessage = (userId) => {
 uploadAudio = (userId, path) => {
   console.log(`uploadAudio for user ${userId}: ${path}`);
 
-  var 
+  var
   notifyfn = () => {
     console.log('send sendChatAction upload_audio');
     bot.sendChatAction({
