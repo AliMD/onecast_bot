@@ -97,7 +97,7 @@ onMessage = (msg) => {
     let buildMessage = makeMessageObj(msg);
     notifyAdmins('Debug: ' + JSON.stringify({sourceMessage: msg, buildMessage: buildMessage}, null, 2));
     notifyAdmins(buildMessage);
-    notifyAdmins(buildMessage.id, buildMessage.from);
+    // notifyAdmins(buildMessage.id, buildMessage.from);
     return;
   }
 
@@ -248,7 +248,7 @@ onMessage = (msg) => {
   if(!fromAdmin && !msg.new_chat_title && !msg.new_chat_participant && !msg.left_chat_participant && !msg.new_chat_photo && !msg.delete_chat_photo)
   {
     notifyAdmins('unknownMessage: ' + JSON.stringify(msg, null, 2));
-    notifyAdmins(msg.id);
+    notifyAdmins(msg.message_id, msg.from.id);
   }
 },
 
@@ -339,7 +339,7 @@ sendMessage = (id, message, fb) => {
   let username = data.users[id] ?
                   data.users[id].username ? `@${data.users[id].username}` : `${data.users[id].title}`
                   : `#${id}`;
-  console.log(`sendMessage(${username}): message.id`);
+  console.log(`sendMessage(${username}): ${message.id}`);
 
   let callBack = (err, data) => {
     if (!err) return fb ? fb(data) : null;
