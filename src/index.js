@@ -14,7 +14,8 @@ config = {
   saveInterval: 5000, // ms
   updateInterval: 1000, //ms
   waitForPosts: 1000, //ms
-  admins: [58389411] // TODO: load from external config
+  admins: [58389411], // TODO: load from external config
+  debugMsgs: true
 },
 
 data = {
@@ -72,7 +73,7 @@ getBotInfo = () => {
 REGEXPS = {
   subscribe: /start|subscribe|عضویت/i,
   unsubscribe: /stop|unsubscribe|خروج|لغو\s*عضویت/i,
-  hello: /hi|hello|welcome|سلام|درود|خوش\s*[اآ]مدی/i,
+  hello: /hi|hello|welcome|salam|سلام|درود|خوش\s*[اآ]مدی/i,
   help: /help|راهنما/i,
   about: /about|درباره/i
 },
@@ -83,33 +84,22 @@ zmba_iv = 0,
 requestMessage = {},
 
 onMessage = (msg) => {
-  /* msg sample
-  {
-    message_id: 1,
-    from: {
-      id: 58389411,
-      first_name: 'Ali',
-      last_name: 'Mihandoost',
-      username: 'Al1MD'
-    },
-    chat: {
-      id: 58389411,
-      first_name: 'Ali',
-      last_name: 'Mihandoost',
-      username: 'Al1MD'
-    },
-    date: 1436704651,
-    text: 'F'
-  }
-  */
-
-  console.log(`**** ${msg.from.username}: ${msg.text}`);
+  console.log(`===> ${msg.from.username}: ${msg.text}`);
 
   let
   msgDate = new Date(msg.date*1000),
   fromAdmin = isAdmin(msg.chat.id)
   ;
   console.log(msgDate.toLocaleString());
+
+  if(fromAdmin && config.debugMsgs)
+  {
+    let buildMessage = makeMessageObj(msg);
+    notifyAdmins('Debug: ' + JSON.stringify({sourceMessage: msg, buildMessage: buildMessage}, null, 2));
+    notifyAdmins(buildMessage);
+    // notifyAdmins(buildMessage.id, buildMessage.from);
+    return;
+  }
 
   //remove bot username
   if(msg.text)
@@ -133,7 +123,7 @@ onMessage = (msg) => {
   // if (msg.text === 'dalli')
   // {
   //   zmba_iv = setInterval(() => {
-  //     sendMessage(msg.chat.id, 'Dalli !');
+  //     sendText(msg.chat.id, 'Dalli !');
   //   }, 2500);
   //   return;
   // }
@@ -153,7 +143,7 @@ onMessage = (msg) => {
   // about
   if (REGEXPS.about.test(msg.text))
   {
-    sendMessage(msg.chat.id, l10n('about').replace('%name%', msg.from.first_name));
+    sendText(msg.chat.id, l10n('about').replace('%name%', msg.from.first_name));
     return;
   }
 
@@ -161,7 +151,7 @@ onMessage = (msg) => {
   //Hello
   if (REGEXPS.hello.test(msg.text))
   {
-    sendMessage(msg.chat.id, l10n('hello').replace('%name%', msg.from.first_name));
+    sendText(msg.chat.id, l10n('hello').replace('%name%', msg.from.first_name));
     return;
   }
 
@@ -257,7 +247,8 @@ onMessage = (msg) => {
   // msg.data = msgDate.toLocaleString();
   if(!fromAdmin && !msg.new_chat_title && !msg.new_chat_participant && !msg.left_chat_participant && !msg.new_chat_photo && !msg.delete_chat_photo)
   {
-    notifyAdmins(msg);
+    notifyAdmins('unknownMessage: ' + JSON.stringify(msg, null, 2));
+    notifyAdmins(msg.message_id, msg.from.id);
   }
 },
 
@@ -270,14 +261,14 @@ subscribe = (user, from) => {
   {
     usr.title = user.title;
 
-    sendMessage(user.id, l10n('group_subscribed').replace('%name%', from.first_name));
-    if(from && from.id) sendMessage(from.id, l10n('thanks_for_add_to_group').replace('%name%', from.first_name).replace('%title%', user.title));
+    sendText(user.id, l10n('group_subscribed').replace('%name%', from.first_name));
+    if(from && from.id) sendText(from.id, l10n('thanks_for_add_to_group').replace('%name%', from.first_name).replace('%title%', user.title));
   }
   else
   {
     if (checkSubscribed(user.id))
     {
-      sendMessage(user.id, l10n('already_subscribed'));
+      sendText(user.id, l10n('already_subscribed'));
       return;
     }
 
@@ -285,7 +276,7 @@ subscribe = (user, from) => {
     usr.last_name = user.last_name;
     if (user.username) usr.username = user.username;
 
-    sendMessage(user.id, l10n('user_subscribed').replace('%name%', user.first_name));
+    sendText(user.id, l10n('user_subscribed').replace('%name%', user.first_name));
   }
 
   data.users[user.id] = usr;
@@ -299,11 +290,11 @@ unsubscribe = (user, from, silent = false) => {
 
   if(!checkSubscribed(user.id))
   {
-    if(!silent) sendMessage(user.id, l10n('not_subscribed').replace('%name%', user.first_name));
+    if(!silent) sendText(user.id, l10n('not_subscribed').replace('%name%', user.first_name));
     return;
   }
   data.users[user.id].unsubscribed = true;
-  if(!silent) sendMessage(user.id, l10n('unsubscribed').replace('%name%', user.first_name));
+  if(!silent) sendText(user.id, l10n('unsubscribed').replace('%name%', user.first_name));
   saveContents();
   //TODO: send some quite message
   notifyAdmins(`user unsubscribe: ${JSON.stringify({user: user, from: from}, null, 2)}`);
@@ -325,22 +316,97 @@ saveContents = (force) => {
   }
 },
 
-sendMessage = (id, text, fb = ()=>{}) => {
-  let username = data.users[id] ? 
+sendText = (id, text, fb) => {
+  let username = data.users[id] ?
                   data.users[id].username ? `@${data.users[id].username}` : `${data.users[id].title}`
                   : `#${id}`;
-  console.log(`sendMessage (${username}): ${text}`);
+  console.log(`sendMText(${username}): ${text}`);
   bot.sendMessage({
     chat_id: id,
-    text: text
+    text: text,
+    parse_mode: 'Markdown'
   }, (err, data) => {
-    if (!err) return fb();
+    if (!err) return fb ? fb(data) : null;
     // else
-    console.log('Error!');
+    console.log('sendText error!');
     console.log(err);
     console.log(data);
-    //TODO: add to awaiting list
+    //TODO: add to a waiting list
   });
+},
+
+sendMessage = (id, message, fb) => {
+  let username = data.users[id] ?
+                  data.users[id].username ? `@${data.users[id].username}` : `${data.users[id].title}`
+                  : `#${id}`;
+  console.log(`sendMessage(${username}): ${message.id}`);
+
+  let callBack = (err, data) => {
+    if (!err) return fb ? fb(data) : null;
+    // else
+    console.log('sendMessage error!');
+    console.log(err);
+    console.log(data);
+    //TODO: add to a waiting list
+  }
+
+  if (message.text) {
+    console.log(`bot.sendMessage: ${message.text}`);
+    bot.sendMessage({
+      chat_id: id,
+      text: message.text,
+      parse_mode: 'Markdown'
+    }, callBack);
+  }
+
+  else if (message.audio) {
+    console.log(`bot.sendAudio: ${message.audio.id}`);
+    bot.sendAudio({
+      chat_id: id,
+      audio: message.audio.id,
+      performer: message.audio.performer,
+      title: message.audio.title
+    }, callBack);
+  }
+
+  else if (message.voice) {
+    console.log('bot.sendVoice');
+    // TODO: fix sendVoice
+    bot.sendAudio({
+      chat_id: id,
+      audio: message.voice.id
+    }, callBack);
+  }
+
+  else if (message.sticker) {
+    console.log('bot.sendSticker');
+    bot.sendSticker({
+      chat_id: id,
+      sticker: message.sticker.id
+    }, callBack);
+  }
+
+  else if (message.photo) {
+    console.log('bot.sendPhoto');
+    bot.sendPhoto({
+      chat_id: id,
+      photo: message.photo.id
+      //TODO: fix caption
+    }, callBack);
+  }
+
+  else if (message.contact) {
+    console.log('bot.sendContact');
+    //TODO: fix sendContact
+  }
+
+  else if (message.document) {
+    onsole.log('bot.sendDocument');
+    bot.sendDocument({
+      chat_id: id,
+      document: message.document.id
+    }, callBack);
+  }
 },
 
 checkSubscribed = (id) => {
@@ -351,23 +417,42 @@ sentUnfinishedMessage = () => {
   // TODO: sent unfinished message from a waiting list
 },
 
-notifyAdmins = (msg) => {
-  console.log(`notifyAdmins: ${msg}`);
+notifyAdmins = (msg, fromId) => {
+  console.log(`notifyAdmins`);
   config.admins.forEach((admin)=>{
-    if(typeof msg === 'object' && msg.message_id)
+    // if(typeof msg === 'object' && msg.message_id)
+    // {
+    //   bot.forwardMessage({
+    //     chat_id: admin,
+    //     from_chat_id: msg.from.id,
+    //     message_id: msg.message_id
+    //   });
+    //   let obj = {id:msg.message_id, from: msg.from};
+    //   if(msg.from.id !== msg.chat.id) obj.chat = msg.chat;
+    //   sendText(admin, JSON.stringify(obj, null, 2));
+    //   return true;
+    // }
+    if(typeof msg === 'object')
     {
+      console.log(`notifyAdmins: sendMessage`);
+      sendMessage(admin, msg);
+    }
+    else if (typeof msg === 'string') {
+      console.log(`notifyAdmins: sendText`);
+      sendText(admin, msg);
+    }
+    else if (!isNaN(msg)) {
+      // msg in a message id
+      console.log(`notifyAdmins: forwardMessage`);
       bot.forwardMessage({
         chat_id: admin,
-        from_chat_id: msg.from.id,
-        message_id: msg.message_id
+        from_chat_id: fromId,
+        message_id: msg
       });
-      let obj = {id:msg.message_id, from: msg.from};
-      if(msg.from.id !== msg.chat.id) obj.chat = msg.chat;
-      sendMessage(admin, JSON.stringify(obj, null, 2));
-      return true;
     }
-
-    sendMessage(admin, msg);
+    else {
+      console.log('notifyAdmins msg type err!');
+    }
   });
 },
 
@@ -379,17 +464,18 @@ recordNewPost = (userId) => {
   console.log(`recordNewPost: ${userId}`);
   if(requestMessage[userId])
   {
-    sendMessage(userId, 'Please /cancel last action.');
+    sendText(userId, 'Please /cancel last action.');
     return;
   }
 
   let postId = -1, msgs = [];
-  sendMessage(userId, 'Recording...\nYou can /cancel or /end the process any time.\n\nPlease enter post id.');
+  sendText(userId, 'Recording...\nYou can /cancel or /end the process any time.\n\nPlease enter post id.');
+
   requestMessage[userId] = (msg) => {
     if(msg.text === '/cancel')
     {
       delete requestMessage[userId];
-      sendMessage(userId, `Ok, recording cancel!\n${msgs.length} has been lost.`);
+      sendText(userId, `Ok, recording cancel!\n${msgs.length} has been lost.`);
       return;
     }
 
@@ -399,11 +485,11 @@ recordNewPost = (userId) => {
       if(id > -1)
       {
         postId = id;
-        sendMessage(userId, `Ok, please enter your messages in any type ;)`);
+        sendText(userId, `Ok, please enter your messages in any type ;)`);
       }
       else
       {
-        sendMessage(userId, `Please enter a positive number.`);
+        sendText(userId, `Please enter a positive number.`);
       }
       return;
     }
@@ -417,12 +503,86 @@ recordNewPost = (userId) => {
         sent_count: 0
       };
       saveContents();
-      sendMessage(userId, `Ok, recording end\n${msgs.length} messages recorded for post_id:${postId}`);
+      sendText(userId, `Ok, recording end\n${msgs.length} messages recorded for post_id:${postId}`);
       return;
     }
 
-    msgs.push(msg.text && msg.text.length > 0 ? msg.text : msg.message_id);
+    msgs.push(makeMessageObj(msg));
   }
+},
+
+// build message object for store in posts.json
+makeMessageObj = (sourceMessage) => {
+  let message = {
+    id: sourceMessage.message_id,
+    from: sourceMessage.from.id,
+    chat: sourceMessage.chat.id,
+    date: sourceMessage.date
+  }
+
+  if (sourceMessage.text) {
+    message.text = sourceMessage.text
+  }
+
+  else if (sourceMessage.audio)
+  {
+    message.audio = {
+      id: sourceMessage.audio.file_id,
+      type: sourceMessage.audio.mime_type,
+      size: sourceMessage.audio.file_size,
+      duration: sourceMessage.audio.duration,
+      // TODO: get performer and title from user
+      performer: sourceMessage.audio.performer,
+      title: sourceMessage.audio.title
+    }
+  }
+
+  else if (sourceMessage.voice)
+  {
+    message.voice = {
+      id: sourceMessage.voice.file_id,
+      type: sourceMessage.voice.mime_type,
+      size: sourceMessage.voice.file_size,
+      duration: sourceMessage.voice.duration
+    }
+  }
+
+  else if (sourceMessage.sticker) {
+    message.sticker = {
+      id: sourceMessage.sticker.file_id,
+      size: sourceMessage.sticker.file_size
+      // TODO: get caption
+    }
+  }
+
+  else if (sourceMessage.photo && sourceMessage.photo.length) {
+    let photo = sourceMessage.photo.pop(); // get largest size of the photo
+    message.photo = {
+      id: photo.file_id,
+      size: photo.file_size,
+      width: photo.width,
+      height: photo.height
+      // TODO: get caption
+    }
+  }
+
+  else if (sourceMessage.contact) {
+    message.contact = sourceMessage.contact;
+    // get phone_number, first_name, last_name, user_id from user
+  }
+
+  else if (sourceMessage.document) {
+    message.document = {
+      id: sourceMessage.document.file_id,
+      type: sourceMessage.document.mime_type,
+      size: sourceMessage.document.file_size
+      // TODO: get caption
+    }
+  }
+
+  //TODO: video, location
+
+  return message;
 },
 
 persianNumbers = [/۰/g, /۱/g, /۲/g, /۳/g, /۴/g, /۵/g, /۶/g, /۷/g, /۸/g, /۹/g],
@@ -445,7 +605,7 @@ sendPost = (userId, postId) => {
 
   if(!post)
   {
-    sendMessage(userId, l10n('post404').replace('%max_post_id%', data.posts.length-1))
+    sendText(userId, l10n('post404').replace('%max_post_id%', data.posts.length-1))
     return;
   }
 
@@ -513,23 +673,23 @@ broadcastMessage = (userId) => {
   console.log(`broadcastMessage: ${userId}`);
   if(requestMessage[userId])
   {
-    sendMessage(userId, 'Please /cancel last action.');
+    sendText(userId, 'Please /cancel last action.');
     return;
   }
 
   let end = false, msgs = [];
-  sendMessage(userId, 'Recording...\nYou can /cancel or /end the process any time.');
+  sendText(userId, 'Recording...\nYou can /cancel or /end the process any time.');
   requestMessage[userId] = (msg) => {
     if(msg.text === '/cancel')
     {
       delete requestMessage[userId];
-      sendMessage(userId, `Ok, recording cancel!\n${msgs.length} has been lost.`);
+      sendText(userId, `Ok, recording cancel!\n${msgs.length} has been lost.`);
       return;
     }
 
     if(msg.text === '/end')
     {
-      sendMessage(userId, `Ok, recording end\n${msgs.length} messages recorded\n\nNext ?\n/cancel\n/preview\n/send2all`);
+      sendText(userId, `Ok, recording end\n${msgs.length} messages recorded\n\nNext ?\n/cancel\n/preview\n/send2all`);
       end = true;
       return;
     }
@@ -557,7 +717,7 @@ broadcastMessage = (userId) => {
         }, i*config.waitForPosts, i);
       }
       setTimeout(() => {
-        sendMessage(userId, `Next ?\n/cancel\n/preview\n/send2all`);
+        sendText(userId, `Next ?\n/cancel\n/preview\n/send2all`);
       }, msgs.length*config.waitForPosts);
       return;
     }
@@ -565,7 +725,7 @@ broadcastMessage = (userId) => {
     if(end && msg.text === '/send2all')
     {
       delete requestMessage[userId];
-      
+
       let users = Object.keys(data.users);
       users.forEach( (uid, i) => {
         if(data.users[uid].unsubscribed) return true;
@@ -620,7 +780,7 @@ broadcastMessage = (userId) => {
 uploadAudio = (userId, path) => {
   console.log(`uploadAudio for user ${userId}: ${path}`);
 
-  var 
+  var
   notifyfn = () => {
     console.log('send sendChatAction upload_audio');
     bot.sendChatAction({
@@ -638,7 +798,7 @@ uploadAudio = (userId, path) => {
     let debug = JSON.stringify({err: err, data: data}, null, 2);
     console.log(`audioSent\n${debug}`);
     clearInterval(notifyIv);
-    sendMessage(userId, debug);
+    sendText(userId, debug);
   });
   notifyfn();
 },
@@ -673,7 +833,7 @@ sendStatus = (userId) => {
     }
   });
 
-  sendMessage(userId, JSON.stringify(status, null, 2));
+  sendText(userId, JSON.stringify(status, null, 2));
 }
 
 ;
