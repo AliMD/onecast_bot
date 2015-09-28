@@ -363,8 +363,9 @@ sendMessage = (id, message, fb) => {
     console.log('bot.sendAudio');
     bot.sendAudio({
       chat_id: id,
-      audio: message.audio.id
-      // TODO: fix performer and title
+      audio: message.audio.id,
+      performer: message.performer,
+      title: message.title
     }, callBack);
   }
 
@@ -529,8 +530,10 @@ makeMessageObj = (sourceMessage) => {
       id: sourceMessage.audio.file_id,
       type: sourceMessage.audio.mime_type,
       size: sourceMessage.audio.file_size,
-      duration: sourceMessage.audio.duration
+      duration: sourceMessage.audio.duration,
       // TODO: get performer and title from user
+      performer: sourceMessage.audio.performer,
+      title: sourceMessage.audio.title
     }
   }
 
