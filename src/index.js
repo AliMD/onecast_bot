@@ -360,12 +360,12 @@ sendMessage = (id, message, fb) => {
   }
 
   else if (message.audio) {
-    console.log('bot.sendAudio');
+    console.log(`bot.sendAudio: ${message.audio.id}`);
     bot.sendAudio({
       chat_id: id,
       audio: message.audio.id,
-      performer: message.performer,
-      title: message.title
+      performer: message.audio.performer,
+      title: message.audio.title
     }, callBack);
   }
 
