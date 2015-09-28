@@ -428,7 +428,66 @@ recordNewPost = (userId) => {
       return;
     }
 
-    msgs.push(msg.text && msg.text.length > 0 ? msg.text : msg.message_id);
+    // build message object for store in posts.json
+
+    let message = {
+      id: msg.message_id,
+      from: msg.from.id,
+      chat: msg.chat.id,
+      date: msg.date
+    }
+
+    if (msg.text) {
+      message.text = msg.text
+    }
+
+    else if (msg.audio)
+    {
+      message.audio = {
+        id: msg.audio.file_id,
+        type: msg.audio.mime_type,
+        size: msg.audio.file_size
+        duration: msg.audio.duration,
+        // TODO: get performer and title from user
+      }
+    }
+
+    else if (msg.sticker) {
+      message.sticker = {
+        id: msg.sticker.file_id,
+        size: msg.sticker.file_size
+        // TODO: get caption
+      }
+    }
+
+    else if (msg.photo && msg.photo.length) {
+      let photo = msg.photo.pop(); // get largest size of the photo
+      message.photo = {
+        id: msg.photo.file_id,
+        size: msg.photo.file_size,
+        width: msg.photo.width,
+        height: msg.photo.height
+        // TODO: get caption
+      }
+    }
+
+    else if (msg.contact) {
+      message.contact = msg.contact;
+      // get phone_number, first_name, last_name, user_id from user
+    }
+
+    else if (msg.document) {
+      message.document = {
+        id: msg.document.file_id,
+        type: msg.document.mime_type,
+        size: msg.document.file_size
+        // TODO: get caption
+      }
+    }
+
+    //TODO: video, voice, location
+
+    msgs.push(message);
   }
 },
 
