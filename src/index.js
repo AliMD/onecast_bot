@@ -251,6 +251,13 @@ onMessage = (msg) => {
     return;
   }
 
+  // make backup
+  if(fromAdmin && (msg.text || '').trim().indexOf('/backup') === 0)
+  {
+    makeBackup(msg.from.id);
+    return;
+  }
+
   //Notify other messages to admin
   // msg.data = msgDate.toLocaleString();
   if(!fromAdmin && !msg.new_chat_title && !msg.new_chat_participant && !msg.left_chat_participant && !msg.new_chat_photo && !msg.delete_chat_photo)
@@ -352,9 +359,11 @@ sendMessage = (id, message, fb) => {
   let callBack = (err, data) => {
     if (!err) return fb ? fb(data) : null;
     // else
-    console.log('sendMessage error!');
-    console.log(err);
-    console.log(data);
+    let
+    errObj = JSON.stringify({err: err, data: data}, null, 2),
+    errDesc = `error!\n${errObj}`
+    ;
+    console.log(errDesc);
     //TODO: add to a waiting list
   }
 
@@ -842,6 +851,31 @@ sendStatus = (userId) => {
   });
 
   sendText(userId, JSON.stringify(status, null, 2));
+},
+
+makeBackup = (userId) => {
+  console.log('makeBackup');
+
+  let callBack = (err, data) => {
+    if (!err) return;
+    // else
+    let
+    errObj = JSON.stringify({err: err, data: data}, null, 2),
+    errDesc = `makeBackup error!\n${errObj}`
+    ;
+    console.log(errDesc);
+    sendText(userId, errDesc);
+  }
+
+  bot.sendDocument({
+    chat_id: userId,
+    document: 'stores/posts.json'
+  }, callBack);
+
+  bot.sendDocument({
+    chat_id: userId,
+    document: 'stores/users.json'
+  }, callBack);
 }
 ;
 
