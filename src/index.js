@@ -628,8 +628,8 @@ sendPost = (userId, postId) => {
 
   for(let i=0, msglen = post.messages.length; i < msglen; i++)
   {
-    /*setTimeout((i) => {
-      let sendErr = (err, dt) => {
+    setTimeout((i) => {
+      /*let sendErr = (err, dt) => {
         if(err)
         {
           let debug = JSON.stringify({err: err, data: dt}, null, 2);
@@ -657,6 +657,7 @@ sendPost = (userId, postId) => {
           message_id: post.messages[i]
         }, sendErr);
       }*/
+
     }, i*config.waitForPosts, i);
   }
 
