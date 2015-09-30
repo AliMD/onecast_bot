@@ -45,7 +45,7 @@ botEvents = () => {
 loadData = () => {
   console.log('loadData');
 
-  data.posts = read('posts', []);
+  data.posts = read('posts', {});
   console.log(`${data.posts.length} posts loaded`);
 
   data.users = read('users', {});
@@ -206,12 +206,13 @@ onMessage = (msg) => {
   }
 
   // Send post
-  let text = fixNumbers((msg.text || ''));
-  let postId = parseInt(text.replace('/','').trim(), 10);
-  if(postId > -1)
+  if(msg.text)
   {
-    sendPost(msg.chat.id, postId);
-    return;
+    let postId = fixNumbers(msg.text.replace('/','').replace(' ',''));
+    if (getPost(postId)) {
+      sendPost(msg.chat.id, postId);
+      return;
+    }
   }
 
   // Send Post to All
@@ -485,7 +486,7 @@ recordNewPost = (userId) => {
     return;
   }
 
-  let postId = -1, msgs = [];
+  let postId = '', msgs = [];
   sendText(userId, 'Recording...\nYou can /cancel or /end the process any time.\n\nPlease enter post id.');
 
   requestMessage[userId] = (msg) => {
@@ -496,17 +497,17 @@ recordNewPost = (userId) => {
       return;
     }
 
-    if(postId < 0)
+    if(!postId)
     {
-      let id = parseInt(fixNumbers(msg.text), 10);
-      if(id > -1)
+      let id = msg.text.trim();
+      if(id)
       {
-        postId = id;
+        postId = fixNumbers(id);
         sendText(userId, `Ok, please enter your messages in any type ;)`);
       }
       else
       {
-        sendText(userId, `Please enter a positive number.`);
+        sendText(userId, `Please enter valid post id.`);
       }
       return;
     }
@@ -514,12 +515,11 @@ recordNewPost = (userId) => {
     if(msg.text === '/end')
     {
       delete requestMessage[userId];
-      data.posts[postId] = {
+      setPost(postId, {
         from: userId,
         messages: msgs,
         sent_count: 0
-      };
-      saveContents();
+      });
       sendText(userId, `Ok, recording end\n${msgs.length} messages recorded for post_id:${postId}`);
       return;
     }
@@ -618,19 +618,17 @@ fixNumbers = (str) => {
 
 sendPost = (userId, postId) => {
   console.log(`sendPost: ${postId} to ${userId}`);
-  let post = data.posts[postId];
+  let post = getPost(postId);
 
-  if(!post)
-  {
-    sendText(userId, l10n('post404').replace('%max_post_id%', data.posts.length-1))
-    return;
-  }
-
-
+  // if(!post)
+  // {
+  //   sendText(userId, l10n('post404').replace('%max_post_id%', data.posts.length-1))
+  //   return;
+  // }
 
   for(let i=0, msglen = post.messages.length; i < msglen; i++)
   {
-    setTimeout((i) => {
+    /*setTimeout((i) => {
       let sendErr = (err, dt) => {
         if(err)
         {
@@ -639,9 +637,12 @@ sendPost = (userId, postId) => {
           console.log(errmsg);
           notifyAdmins(errmsg);
         }
-      };
+      };*/
+      //TODO: Fix sendErr callback
 
-      if(typeof post.messages[i] === 'string')
+      sendMessage(userId, post.messages[i]);
+
+      /*if(typeof post.messages[i] === 'string')
       {
         bot.sendMessage({
           chat_id: userId,
@@ -655,7 +656,7 @@ sendPost = (userId, postId) => {
           from_chat_id: post.from,
           message_id: post.messages[i]
         }, sendErr);
-      }
+      }*/
     }, i*config.waitForPosts, i);
   }
 
@@ -663,11 +664,23 @@ sendPost = (userId, postId) => {
   saveContents();
 },
 
+getPost = (postId) => {
+  postId = (postId+'').toLowerCase().trim().replace(' ', '_');
+  // console.log(`getPost: ${postId}`);
+  return data.posts[postId];
+},
+
+setPost = (postId, postContent) => {
+  postId = (postId+'').toLowerCase().trim().replace(' ', '_');
+  data.posts[postId] = postContent;
+  saveContents();
+},
+
 sendPost2All = (postId) => {
   console.log(`sendPost2All: ${postId}`);
   notifyAdmins(`sendPost2All: ${postId}`);
 
-  if(!postId || !data.posts[postId])
+  if(!postId || !getPost(postId))
   {
     notifyAdmins(`sendPost2All: post id not found`);
     return;
@@ -821,19 +834,21 @@ uploadAudio = (userId, path) => {
 },
 
 sendStatus = (userId) => {
+  return; // disable temporary
   console.log(`sendStatus to ${userId}`);
   let status = {
-    help: data.posts[0] ? data.posts[0].sent_count : 'Err!',
+    help: getPost(0) ? getPost(0).sent_count : 'Err!',
     posts: {},
     postSum: 0,
     users: 0,
     groups: 0
   };
 
+  //TODO: Fix
   for(let i=1, len = data.posts.length; i<len; i++)
   {
-    if(!data.posts[i]) continue;
-    status.posts[`Cast_${i}`] = data.posts[i].sent_count;
+    if(!getPost(i)) continue;
+    status.posts[`Cast_${i}`] = getPost(i).sent_count;
     status.postSum += status.posts[`Cast_${i}`];
   }
 
